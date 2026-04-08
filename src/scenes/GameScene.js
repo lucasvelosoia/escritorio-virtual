@@ -198,8 +198,14 @@ export class GameScene extends Phaser.Scene {
             };
         }
 
-        // Restrição de Admin para Modo Layout
+        // Restrição de Admin para Modo Layout e Identificação do Usuário
         const userEmail = localStorage.getItem('user-email');
+        const userName = userEmail ? userEmail.split('@')[0] : 'Visitante';
+        const displayEl = document.getElementById('user-display-name');
+        if (displayEl) {
+            displayEl.textContent = `${userName} (Você)`;
+        }
+
         const layoutBtn = document.getElementById('btn-layout');
         if (layoutBtn) {
             if (userEmail === 'admin@escritorio.com') {

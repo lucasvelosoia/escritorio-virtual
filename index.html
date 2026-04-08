@@ -21,11 +21,11 @@
           <div class="user-indicators">
             <div class="user-status guest">
               <div class="avatar-icon partner"></div>
-              <span>Partner</span>
+              <span id="user-partner-name">Partner</span>
             </div>
             <div class="user-status">
               <div class="avatar-icon"></div>
-              <span>Founder (You)</span>
+              <span id="user-display-name">Carregando...</span>
             </div>
           </div>
         </header>
@@ -59,20 +59,20 @@
         </div>
 
         <nav class="hud-footer">
-          <div class="action-group">
-            <button class="hud-btn" id="btn-chat">
+          <div class="action-buttons">
+            <button class="btn btn-chat" id="btn-chat">
               <span class="btn-icon">💬</span> Chat
             </button>
-            <button class="hud-btn" id="btn-tasks">
+            <button class="btn btn-tasks" id="btn-tasks">
               <span class="btn-icon">📋</span> Roadmap
             </button>
-            <button class="hud-btn secondary" id="btn-customize">
+            <button class="btn btn-customize" id="btn-customize">
               <span class="btn-icon">👕</span> Personalizar
             </button>
           </div>
           
           <div class="admin-group">
-            <button class="hud-btn glass" id="btn-layout">
+            <button class="btn btn-layout" id="btn-layout" style="display: none">
               <span class="btn-icon">⊞</span> Modo Layout
             </button>
           </div>

@@ -178,16 +178,28 @@ body {
   border-color: var(--primary);
 }
 
-.btn-layout {
-  background: #1e2b3b;
-  color: #10b981;
+.btn-tasks {
+  background: #1e293b;
+  color: white;
   border: 1px solid rgba(16, 185, 129, 0.4);
 }
 
-.btn-layout:hover {
+.btn-tasks:hover {
   background: rgba(16, 185, 129, 0.1);
   transform: translateY(-2px);
   border-color: var(--accent);
+}
+
+.btn-layout {
+  background: #1e2b3b;
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.btn-layout:hover {
+  background: rgba(251, 191, 36, 0.1);
+  transform: translateY(-2px);
+  border-color: #fbbf24;
 }
 
 /* --- Side Panel --- */
