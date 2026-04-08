@@ -202,17 +202,29 @@ export class GameScene extends Phaser.Scene {
         const userEmail = localStorage.getItem('user-email');
         const userName = userEmail ? userEmail.split('@')[0] : 'Visitante';
         const displayEl = document.getElementById('user-display-name');
+        
+        console.log('HUD Update debug:', { userEmail, userName, foundDisplayEl: !!displayEl });
+
         if (displayEl) {
             displayEl.textContent = `${userName} (Você)`;
         }
 
-        const layoutBtn = document.getElementById('btn-layout');
-        if (layoutBtn) {
+        const lBtn = document.getElementById('btn-layout');
+        const cBtn = document.getElementById('btn-chat');
+        const custBtn = document.getElementById('btn-customize');
+
+        console.log('Buttons Check debug:', { 
+            layoutBtn: !!lBtn, 
+            chatBtn: !!cBtn, 
+            customizeBtn: !!custBtn 
+        });
+
+        if (lBtn) {
             if (userEmail === 'admin@escritorio.com') {
-                layoutBtn.style.display = 'flex';
-                layoutBtn.onclick = () => this.admin.toggle();
+                lBtn.style.display = 'flex';
+                lBtn.onclick = () => this.admin.toggle();
             } else {
-                layoutBtn.style.display = 'none';
+                lBtn.style.display = 'none';
             }
         }
     }
