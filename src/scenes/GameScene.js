@@ -163,16 +163,14 @@ export class GameScene extends Phaser.Scene {
             }
         });
 
-        // Bonecos dos Funcionários
-        this._spawnEmployees();
-        this.events.on('employees-updated', () => this._spawnEmployees());
+        // Removidos os bonecos automáticos (NPCs) para focar apenas no multiplayer real
 
         // Conecta botões do HUD (HTML)
         const chatBtn = document.getElementById('btn-chat');
         if (chatBtn) {
             chatBtn.onclick = () => {
                 const panel = document.getElementById('chat-panel');
-                panel?.classList.toggle('open');
+                panel?.classList.toggle('active');
             };
         }
         
@@ -572,7 +570,7 @@ export class GameScene extends Phaser.Scene {
             this._lastUpdate = this.time.now;
         }
 
-        this._updateNPCs(this.time.now, 0);
+        // this._updateNPCs(this.time.now, 0); // Removido movimento de NPCs
 
         // Detecta setor
         const px=this.player.x, py=this.player.y;
