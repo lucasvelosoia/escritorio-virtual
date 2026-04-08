@@ -13,8 +13,8 @@ export class MultiplayerService {
         }
 
         this.supabase = createClient(this.url, this.key);
-        this.userId = 'user-' + Math.random().toString(36).substring(2, 9);
-        this.userName = localStorage.getItem('user-name') || 'Visitante';
+        this.userId = localStorage.getItem('user-id') || ('user-' + Math.random().toString(36).substring(2, 9));
+        this.userName = localStorage.getItem('user-email')?.split('@')[0] || 'Visitante';
         this.active = true;
         
         this.remotePlayers = new Map(); // id -> {sprite, label}

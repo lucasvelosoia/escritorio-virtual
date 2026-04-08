@@ -12,71 +12,74 @@
   </head>
   <body>
     <!-- App Wrapper for HUD -->
-    <div id="app-wrapper">
-      <header class="hud-header">
-        <div class="logo">Virtual<span>Office</span></div>
-        <div class="user-indicators">
-          <div class="user-status guest">
-            <div class="avatar-icon partner"></div>
-            <span>Partner</span>
-          </div>
-          <div class="user-status">
-            <div class="avatar-icon"></div>
-            <span>Founder (You)</span>
-          </div>
-        </div>
-      </header>
-      
-      <!-- Phaser Game Container -->
-      <div id="game-container"></div>
+    <div id="game-container"></div>
 
-      <!-- Chat Panel (Hidden by default) -->
-      <div id="chat-panel" class="side-panel">
-        <div class="panel-header">
-          <h3>Office Chat</h3>
-          <button class="close-panel">×</button>
+    <div id="hud-main" style="display: none">
+      <div id="app-wrapper">
+        <header class="hud-header">
+          <div class="logo">Virtual<span>Office</span></div>
+          <div class="user-indicators">
+            <div class="user-status guest">
+              <div class="avatar-icon partner"></div>
+              <span>Partner</span>
+            </div>
+            <div class="user-status">
+              <div class="avatar-icon"></div>
+              <span>Founder (You)</span>
+            </div>
+          </div>
+        </header>
+        
+        <!-- Chat Panel (Hidden by default) -->
+        <div id="chat-panel" class="side-panel">
+          <div class="panel-header">
+            <h3>Office Chat</h3>
+            <button class="close-panel">×</button>
+          </div>
+          <div class="chat-messages">
+            <div class="msg system">Welcome to the Virtual Office.</div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" placeholder="Type a message..." id="chat-input" />
+          </div>
         </div>
-        <div class="chat-messages">
-          <div class="msg system">Welcome to the Virtual Office.</div>
+        
+        <!-- Task Board Panel (Hidden by default) -->
+        <div id="task-board" class="side-panel left">
+          <div class="panel-header">
+            <h3>Project Roadmap</h3>
+            <button class="close-tasks">×</button>
+          </div>
+          <div class="task-list">
+            <div class="task-item done">
+              <span class="status">✓</span>
+              <p>Setup Virtual Office Foundation</p>
+            </div>
+          </div>
         </div>
-        <div class="chat-input-area">
-          <input type="text" placeholder="Type a message..." id="chat-input" />
-        </div>
+
+        <nav class="hud-footer">
+          <div class="action-group">
+            <button class="hud-btn" id="btn-chat">
+              <span class="btn-icon">💬</span> Chat
+            </button>
+            <button class="hud-btn" id="btn-tasks">
+              <span class="btn-icon">📋</span> Roadmap
+            </button>
+            <button class="hud-btn secondary" id="btn-customize">
+              <span class="btn-icon">👕</span> Personalizar
+            </button>
+          </div>
+          
+          <div class="admin-group">
+            <button class="hud-btn glass" id="btn-layout">
+              <span class="btn-icon">⊞</span> Modo Layout
+            </button>
+          </div>
+        </nav>
       </div>
-      
-      <!-- Task Board Panel (Hidden by default) -->
-      <div id="task-board" class="side-panel left">
-        <div class="panel-header">
-          <h3>Project Roadmap</h3>
-          <button class="close-tasks">×</button>
-        </div>
-        <div class="task-list">
-          <div class="task-item done">
-            <span class="status">✓</span>
-            <p>Setup Virtual Office Foundation</p>
-          </div>
-          <div class="task-item">
-            <span class="status">○</span>
-            <p>Integrate AI Partner logic</p>
-          </div>
-          <div class="task-item">
-            <span class="status">○</span>
-            <p>Connect Real-time DB</p>
-          </div>
-        </div>
-      </div>
-      
-      <footer class="hud-footer">
-        <div class="control-hint">
-          <span>W</span><span>A</span><span>S</span><span>D</span> or Arrows to move
-        </div>
-        <div class="action-buttons">
-          <button id="btn-chat" class="btn btn-chat">💬 Chat</button>
-          <button id="btn-customize" class="btn btn-customize">👤 Personalizar</button>
-          <button id="btn-layout" class="btn btn-layout">⊞ Modo Layout</button>
-        </div>
-      </footer>
     </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
