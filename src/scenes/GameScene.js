@@ -170,7 +170,15 @@ export class GameScene extends Phaser.Scene {
         if (chatBtn) {
             chatBtn.onclick = () => {
                 const panel = document.getElementById('chat-panel');
-                panel?.classList.toggle('active');
+                panel?.classList.toggle('open');
+            };
+        }
+
+        const tasksBtn = document.getElementById('btn-tasks');
+        if (tasksBtn) {
+            tasksBtn.onclick = () => {
+                const panel = document.getElementById('task-board');
+                panel?.classList.toggle('open');
             };
         }
         
