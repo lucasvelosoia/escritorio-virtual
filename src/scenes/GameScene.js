@@ -75,7 +75,7 @@ export class GameScene extends Phaser.Scene {
             EMPLOYEES.push(...employees);
         }
         
-        this._spawnEmployees();
+        // this._spawnEmployees(); // Removidos os funcionários fakes
     }
 
     create() {
@@ -190,6 +190,18 @@ export class GameScene extends Phaser.Scene {
                     chatInput.value = '';
                 }
             };
+        }
+
+        // Restrição de Admin para Modo Layout
+        const userEmail = localStorage.getItem('user-email');
+        const layoutBtn = document.getElementById('btn-layout');
+        if (layoutBtn) {
+            if (userEmail === 'admin@escritorio.com') {
+                layoutBtn.style.display = 'flex';
+                layoutBtn.onclick = () => this.admin.toggle();
+            } else {
+                layoutBtn.style.display = 'none';
+            }
         }
     }
 
