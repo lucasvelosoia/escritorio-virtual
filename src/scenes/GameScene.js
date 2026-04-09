@@ -190,7 +190,20 @@ export class GameScene extends Phaser.Scene {
         // Conecta Chat Multi (Input)
         const chatInput = document.getElementById('chat-input');
         if (chatInput) {
+            chatInput.addEventListener('focus', () => {
+                if (this.input && this.input.keyboard) {
+                    this.input.keyboard.enabled = false;
+                }
+            });
+            chatInput.addEventListener('blur', () => {
+                if (this.input && this.input.keyboard) {
+                    this.input.keyboard.enabled = true;
+                }
+            });
+
             chatInput.onkeydown = (e) => {
+                // Impede o evento de chegar a qualquer listener global fora, por garantia
+                e.stopPropagation(); 
                 if (e.key === 'Enter' && chatInput.value.trim() !== '') {
                     this.multiplayer.sendChatMessage(chatInput.value.trim());
                     chatInput.value = '';
