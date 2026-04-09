@@ -82,7 +82,7 @@ export class MultiplayerService {
 
     async sendChatMessage(text) {
         if (!this.active) {
-            this._handleChatMessage({ name: 'Você (Local)', text });
+            this._handleChatMessage({ id: this.userId, name: 'Você (Local)', text });
             return;
         }
 
@@ -95,9 +95,9 @@ export class MultiplayerService {
         this.channel.send({
             type: 'broadcast',
             event: 'chat',
-            payload: { name: this.userName, text }
+            payload: { id: this.userId, name: this.userName, text }
         });
-        this._handleChatMessage({ name: 'Você', text });
+        this._handleChatMessage({ id: this.userId, name: 'Você', text });
     }
 
     _syncPlayers(state) {
@@ -191,7 +191,63 @@ export class MultiplayerService {
 
         if (!isHistory) {
             msg.style.animation = 'messageSlide 0.3s ease-out forwards';
+            if (data.id) this._showSpeechBubble(data.id, data.text);
         }
+    }
+
+    _showSpeechBubble(id, text) {
+        let targetSprite = null;
+        if (id === this.userId) {
+            targetSprite = this.scene.player;
+        } else {
+            const p = this.remotePlayers.get(id);
+            if (p) targetSprite = p.sprite;
+        }
+
+        if (!targetSprite) return;
+
+        // Limpa balão anterior se existir (evita sobreposição no mesmo personagem)
+        if (targetSprite.speechBubble) {
+            this.scene.events.off('postupdate', targetSprite.bubbleUpdateFn);
+            targetSprite.speechBubble.destroy();
+        }
+
+        // Formatação do Balão
+        const bubble = this.scene.add.text(targetSprite.x, targetSprite.y - 45, text, {
+            fontFamily: 'Outfit, sans-serif', fontSize: '11px', color: '#1e293b',
+            backgroundColor: '#ffffffee', padding: { x: 8, y: 6 },
+            fontWeight: '600', align: 'center',
+            wordWrap: { width: 140, useAdvancedWrap: true }
+        }).setOrigin(0.5, 1).setDepth(100);
+
+        // Faz o balão seguir o personagem
+        const updateBubble = () => {
+            if (!bubble.active || !targetSprite.active) return;
+            bubble.setPosition(targetSprite.x, targetSprite.y - 45);
+        };
+        this.scene.events.on('postupdate', updateBubble);
+
+        targetSprite.speechBubble = bubble;
+        targetSprite.bubbleUpdateFn = updateBubble;
+
+        // Animação de sumiço após 4 segundos
+        this.scene.time.delayedCall(4000, () => {
+            if (!bubble.active) return;
+            this.scene.tweens.add({
+                targets: bubble,
+                alpha: 0,
+                y: bubble.y - 12,
+                duration: 300,
+                onComplete: () => {
+                    this.scene.events.off('postupdate', updateBubble);
+                    bubble.destroy();
+                    if (targetSprite.speechBubble === bubble) {
+                        targetSprite.speechBubble = null;
+                        targetSprite.bubbleUpdateFn = null;
+                    }
+                }
+            });
+        });
     }
 
     // ── Novos métodos de persistência ──
