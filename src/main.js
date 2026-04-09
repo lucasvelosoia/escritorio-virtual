@@ -37,3 +37,11 @@ const auth = new AuthSystem({
 
 // Verifica se já está logado ao carregar a página
 auth.checkSession();
+
+// Setup UI buttons
+const btnLogout = document.getElementById('btn-logout');
+if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+        auth.logout();
+    });
+}

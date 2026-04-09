@@ -5,11 +5,48 @@ export class AuthSystem {
         this.onAuthSuccess = callbacks.onAuthSuccess;
         const url = import.meta.env.VITE_SUPABASE_URL;
         const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        this.supabase = createClient(url, key);
         this.el = null;
+
+        if (!url || !key || url.includes('SUA_URL')) {
+            console.error('ERRO FATAL: Credenciais do Supabase não encontradas no Vercel (.env).');
+            this.showSetupError();
+            return;
+        }
+
+        this.supabase = createClient(url, key);
+    }
+
+    showSetupError() {
+        if (this.el) return;
+        this.el = document.createElement('div');
+        this.el.id = 'auth-screen';
+        this.el.style.cssText = `
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background: #0f172a; display:flex; align-items:center; justify-content:center;
+            font-family: 'Outfit', sans-serif; z-index: 20000;
+        `;
+        const container = document.createElement('div');
+        container.style.cssText = `
+            background:#1e293b; border:1px solid #ef4444; padding:48px;
+            border-radius:32px; box-shadow: 0 25px 50px -12px rgba(239,68,68,0.5);
+            width:420px; text-align:center;
+        `;
+        container.innerHTML = `
+            <div style="font-size:48px; margin-bottom:16px">⛔</div>
+            <h1 style="color:#fff; margin:0 0 16px; font-size:24px">Ambiente Não Configurado</h1>
+            <p style="color:#fca5a5; margin:0; font-size:15px; line-height: 1.5">
+                Não consegui encontrar as chaves do Supabase no Vercel. 
+                <br><br>
+                Adicione <b>VITE_SUPABASE_URL</b> e <b>VITE_SUPABASE_ANON_KEY</b> nas variáveis de ambiente!
+            </p>
+        `;
+        this.el.appendChild(container);
+        document.body.appendChild(this.el);
     }
 
     async checkSession() {
+        if (!this.supabase) return false;
+        
         const { data: { session } } = await this.supabase.auth.getSession();
         if (session) {
             this.onAuthSuccess(session.user);
@@ -17,6 +54,14 @@ export class AuthSystem {
         }
         this.showLogin();
         return false;
+    }
+
+    async logout() {
+        if (!this.supabase) return;
+        await this.supabase.auth.signOut();
+        localStorage.removeItem('user-email');
+        localStorage.removeItem('user-id');
+        window.location.reload();
     }
 
     showLogin() {

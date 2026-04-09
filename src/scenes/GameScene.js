@@ -46,8 +46,8 @@ export class GameScene extends Phaser.Scene {
         this.avatarCustomizer = new AvatarCustomizer({
             onSave: (base) => this._updatePlayerStyle(base)
         });
-        this.multiplayer = new MultiplayerService(this);
         this._promptText = null;
+        this._lastUpdate = 0;
         this._lastUpdate = 0;
     }
 
@@ -79,6 +79,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
+        this.multiplayer = new MultiplayerService(this);
+        
         // ── Mapa WA padrão ────────────────────────────────────────────
         const map = this.make.tilemap({ key: 'office-map' });
         const ts5  = map.addTilesetImage('tileset5_export',        'tileset5_export');

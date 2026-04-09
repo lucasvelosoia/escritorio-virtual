@@ -14,14 +14,16 @@ export class MultiplayerService {
 
         this.supabase = createClient(this.url, this.key);
         this.userId = localStorage.getItem('user-id') || ('user-' + Math.random().toString(36).substring(2, 9));
+        this.sessionId = this.userId + '-' + Math.random().toString(36).substring(2, 9);
         this.userName = localStorage.getItem('user-email')?.split('@')[0] || 'Visitante';
         this.active = true;
+        this.isSubscribed = false;
         
         this.remotePlayers = new Map(); // id -> {sprite, label}
         
         this.channel = this.supabase.channel('virtual-office-room', {
             config: {
-                presence: { key: this.userId }
+                presence: { key: this.sessionId }
             }
         });
 
@@ -59,30 +61,36 @@ export class MultiplayerService {
                 this._handleChatMessage(payload);
             })
             .subscribe(async (status) => {
+                console.log('Supabase Channel Status:', status);
                 if (status === 'SUBSCRIBED') {
+                    this.isSubscribed = true;
                     await this.updatePresence();
                 }
             });
     }
 
     async updatePresence() {
-        if (!this.active) return;
+        if (!this.active || !this.isSubscribed) return;
         const player = this.scene.player;
         if (!player) return;
 
-        await this.channel.track({
-            name: this.userName,
-            x: player.x,
-            y: player.y,
-            fullKey: this.scene.playerFullKey,
-            dir: this.scene.currentDir,
-            anim: player.anims.currentAnim?.key
-        });
+        try {
+            await this.channel.track({
+                name: this.userName,
+                x: player.x,
+                y: player.y,
+                fullKey: this.scene.playerFullKey,
+                dir: this.scene.currentDir,
+                anim: player.anims.currentAnim?.key
+            });
+        } catch (e) {
+            console.warn('Erro ao atualizar presença:', e);
+        }
     }
 
     async sendChatMessage(text) {
         if (!this.active) {
-            this._handleChatMessage({ id: this.userId, name: 'Você (Local)', text });
+            this._handleChatMessage({ id: this.sessionId, name: 'Você (Local)', text });
             return;
         }
 
@@ -95,14 +103,14 @@ export class MultiplayerService {
         this.channel.send({
             type: 'broadcast',
             event: 'chat',
-            payload: { id: this.userId, name: this.userName, text }
+            payload: { id: this.sessionId, name: this.userName, text }
         });
-        this._handleChatMessage({ id: this.userId, name: 'Você', text });
+        this._handleChatMessage({ id: this.sessionId, name: 'Você', text });
     }
 
     _syncPlayers(state) {
         Object.entries(state).forEach(([id, presences]) => {
-            if (id === this.userId) return;
+            if (id === this.sessionId) return;
             const data = presences[0];
             if (!data) return;
 
@@ -197,7 +205,7 @@ export class MultiplayerService {
 
     _showSpeechBubble(id, text) {
         let targetSprite = null;
-        if (id === this.userId) {
+        if (id === this.sessionId) {
             targetSprite = this.scene.player;
         } else {
             const p = this.remotePlayers.get(id);
