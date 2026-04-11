@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 export class AuthSystem {
     constructor(callbacks) {
         this.onAuthSuccess = callbacks.onAuthSuccess;
-        const url = import.meta.env.VITE_SUPABASE_URL;
-        const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+        const url = rawUrl.trim();
+        const key = rawKey.trim();
         this.el = null;
 
         if (!url || !key || url.includes('SUA_URL')) {

@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 export class MultiplayerService {
     constructor(scene) {
         this.scene = scene;
-        this.url = import.meta.env.VITE_SUPABASE_URL;
-        this.key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+        const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+        this.url = rawUrl.trim();
+        this.key = rawKey.trim();
         
         if (!this.url || !this.key || this.url.includes('SUA_URL')) {
             console.warn('Supabase não configurado. Rodando em modo Local.');
