@@ -77,8 +77,26 @@
             </button>
           </div>
         </nav>
+        </div> <!-- End of app-wrapper -->
+        
+        <!-- Meeting Modal (Proximity-based for Reunion Room) -->
+        <div id="meeting-modal" class="meeting-overlay">
+          <div class="meeting-content">
+            <div class="meeting-header">
+              <div class="status-badge">🔴 LIVE MEETING</div>
+              <h2 id="meeting-room-name">Sala de Reunião</h2>
+              <div id="meeting-participants-count">0 Participantes</div>
+            </div>
+            <div id="meeting-grid" class="participant-grid">
+              <!-- Participantes via JS -->
+            </div>
+            <div class="meeting-footer">
+              <button class="meet-btn leave-btn" id="btn-leave-meeting">Sair da Reunião</button>
+              <button class="meet-btn share-btn">Compartilhar Tela</button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>

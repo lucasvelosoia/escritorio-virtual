@@ -702,6 +702,13 @@ export class GameScene extends Phaser.Scene {
             this.activeSector = found;
             const hex = found ? '#'+found.color.toString(16).padStart(6,'0') : '#ffffff';
             this.sectorLabel.setText(found ? `◈ ${found.label}` : '').setColor(hex);
+
+            // ── Lógica de Reunião (Proximidade) ───────────────────────
+            if (found && found.id === 'reuniao') {
+                this._openMeeting();
+            } else {
+                this._closeMeeting();
+            }
         }
 
         // ── Detecta computador próximo ─────────────────────────────
@@ -717,5 +724,86 @@ export class GameScene extends Phaser.Scene {
         } else {
             this._promptText.setVisible(false);
         }
+    }
+
+    _openMeeting() {
+        const modal = document.getElementById('meeting-modal');
+        if (!modal || modal.classList.contains('active')) return;
+        modal.classList.add('active');
+        
+        // Bloqueia teclado do Phaser
+        if (this.input && this.input.keyboard) this.input.keyboard.enabled = false;
+        
+        this._updateMeetingUI();
+        
+        this._meetingTimer = this.time.addEvent({
+            delay: 2000,
+            callback: () => this._updateMeetingUI(),
+            loop: true
+        });
+
+        const leaveBtn = document.getElementById('btn-leave-meeting');
+        if (leaveBtn) {
+            leaveBtn.onclick = () => {
+                this.player.setPosition(22 * 32, 7 * 32); 
+                this._closeMeeting();
+            };
+        }
+    }
+
+    _closeMeeting() {
+        const modal = document.getElementById('meeting-modal');
+        if (modal) modal.classList.remove('active');
+        if (this.input && this.input.keyboard) this.input.keyboard.enabled = true;
+        
+        if (this._meetingTimer) {
+            this._meetingTimer.remove();
+            this._meetingTimer = null;
+        }
+    }
+
+    _updateMeetingUI() {
+        const grid = document.getElementById('meeting-grid');
+        const countTxt = document.getElementById('meeting-participants-count');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        this._addParticipantCard(grid, this.playerFullKey, 'Você', true);
+        let count = 1;
+
+        if (this.multiplayer.active) {
+            const reuniao = SECTORS.find(s => s.id === 'reuniao');
+            if (reuniao) {
+                this.multiplayer.remotePlayers.forEach((p, id) => {
+                    const sx = p.sprite.x;
+                    const sy = p.sprite.y;
+                    if (sx >= reuniao.pixelX && sx < reuniao.pixelX + reuniao.pixelW &&
+                        sy >= reuniao.pixelY && sy < reuniao.pixelY + reuniao.pixelH) {
+                        this._addParticipantCard(grid, p.sprite.texture.key, p.label.text, false);
+                        count++;
+                    }
+                });
+            }
+        }
+        if (countTxt) countTxt.innerText = `${count} Participante${count > 1 ? 's' : ''}`;
+    }
+
+    _addParticipantCard(container, key, name, isMe) {
+        const card = document.createElement('div');
+        card.className = `participant-card ${isMe ? 'me' : ''}`;
+        const canvas = document.createElement('canvas');
+        canvas.width = 64; canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        const tex = this.textures.get(key);
+        if (tex) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(tex.getSourceImage(), 0, 0, 32, 32, 0, 0, 64, 64);
+        }
+        card.appendChild(canvas);
+        const nameEl = document.createElement('div');
+        nameEl.className = 'name';
+        nameEl.innerText = name;
+        card.appendChild(nameEl);
+        container.appendChild(card);
     }
 }
