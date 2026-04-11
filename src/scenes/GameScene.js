@@ -169,11 +169,35 @@ export class GameScene extends Phaser.Scene {
 
         // Conecta botões do HUD (HTML)
         const chatBtn = document.getElementById('btn-chat');
-        if (chatBtn) {
+        const chatPanel = document.getElementById('chat-panel');
+        const chatInput = document.getElementById('chat-input');
+
+        if (chatBtn && chatPanel && chatInput) {
             chatBtn.onclick = () => {
-                const panel = document.getElementById('chat-panel');
-                panel?.classList.toggle('open');
+                if (chatPanel.classList.contains('focused')) {
+                    chatInput.blur();
+                } else {
+                    chatPanel.classList.add('focused');
+                    chatInput.focus();
+                }
             };
+
+            // Minecraft style hotkeys
+            this.input.keyboard.on('keydown-T', (e) => {
+                if (document.activeElement !== chatInput) {
+                    e.preventDefault();
+                    chatPanel.classList.add('focused');
+                    // Pequeno delay para evitar que a letra 't' apareça no input
+                    setTimeout(() => chatInput.focus(), 10);
+                }
+            });
+            this.input.keyboard.on('keydown-ENTER', (e) => {
+                if (document.activeElement !== chatInput) {
+                    e.preventDefault();
+                    chatPanel.classList.add('focused');
+                    setTimeout(() => chatInput.focus(), 10);
+                }
+            });
         }
 
         const tasksBtn = document.getElementById('btn-tasks');
@@ -190,7 +214,6 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Conecta Chat Multi (Input)
-        const chatInput = document.getElementById('chat-input');
         if (chatInput) {
             chatInput.addEventListener('focus', () => {
                 if (this.input && this.input.keyboard) {
@@ -201,14 +224,21 @@ export class GameScene extends Phaser.Scene {
                 if (this.input && this.input.keyboard) {
                     this.input.keyboard.enabled = true;
                 }
+                document.getElementById('chat-panel')?.classList.remove('focused');
             });
 
             chatInput.onkeydown = (e) => {
                 // Impede o evento de chegar a qualquer listener global fora, por garantia
                 e.stopPropagation(); 
-                if (e.key === 'Enter' && chatInput.value.trim() !== '') {
-                    this.multiplayer.sendChatMessage(chatInput.value.trim());
-                    chatInput.value = '';
+                if (e.key === 'Enter') {
+                    if (chatInput.value.trim() !== '') {
+                        this.multiplayer.sendChatMessage(chatInput.value.trim());
+                        chatInput.value = '';
+                    }
+                    chatInput.blur();
+                }
+                if (e.key === 'Escape') {
+                    chatInput.blur();
                 }
             };
         }

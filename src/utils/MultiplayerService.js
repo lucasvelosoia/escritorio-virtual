@@ -240,6 +240,15 @@ export class MultiplayerService {
         if (!isHistory) {
             msg.style.animation = 'messageSlide 0.3s ease-out forwards';
             if (data.id) this._showSpeechBubble(data.id, data.text);
+            
+            // Fade out after 6 seconds (Minecraft style)
+            setTimeout(() => {
+                if (msg && msg.parentNode) {
+                    msg.style.opacity = '0';
+                }
+            }, 6000);
+        } else {
+            msg.style.opacity = '0';
         }
     }
 

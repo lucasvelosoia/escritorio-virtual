@@ -213,86 +213,104 @@ body {
   border-color: #fbbf24;
 }
 
-/* --- Side Panel --- */
-.side-panel {
+/* --- Minecraft Style Chat --- */
+.minecraft-chat {
   position: absolute;
-  top: 90px;
-  right: -400px; /* Hidden by default */
-  width: 350px;
-  height: calc(100vh - 190px);
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  z-index: 200;
+  bottom: 100px;
+  left: 40px;
+  width: 500px;
   display: flex;
   flex-direction: column;
-  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  pointer-events: none; /* Let clicks pass through to game when not focused */
+}
+
+.minecraft-chat.focused {
   pointer-events: auto;
 }
 
-.side-panel.open {
-  right: 20px;
-}
-
-.panel-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--glass-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.close-panel {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 24px;
-  cursor: pointer;
-}
-
 .chat-messages {
-  flex-grow: 1;
-  padding: 20px;
-  overflow-y: auto;
+  max-height: 250px;
+  overflow-y: hidden;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 2px;
+  padding-bottom: 8px;
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, black);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, black);
+}
+
+.minecraft-chat.focused .chat-messages {
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px 8px 0 0;
+  padding: 8px;
+}
+
+/* Custom Scrollbar for chat */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
 .msg {
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 14px;
-  max-width: 85%;
+  padding: 3px 8px;
+  font-size: 15px;
+  font-family: 'Outfit', sans-serif;
+  color: white;
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+  background: rgba(0, 0, 0, 0.4);
+  align-self: flex-start;
+  border-radius: 4px;
+  transition: opacity 0.5s ease;
+  line-height: 1.3;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.minecraft-chat.focused .msg {
+  background: transparent;
+  opacity: 1 !important;
 }
 
 .msg.system {
-  background: rgba(255, 255, 255, 0.05);
-  align-self: center;
-  color: var(--text-dim);
+  color: #fbbf24;
   font-style: italic;
-  font-size: 12px;
 }
 
 .chat-input-area {
-  padding: 20px;
-  border-top: 1px solid var(--glass-border);
+  display: none;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 6px 12px;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.minecraft-chat.focused .chat-input-area {
+  display: flex;
+}
+
+.chat-prefix {
+  color: white;
+  font-weight: bold;
+  font-family: monospace;
 }
 
 #chat-input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 12px 16px;
+  flex-grow: 1;
+  background: transparent;
+  border: none;
   color: white;
   outline: none;
-}
-
-#chat-input:focus {
-  border-color: var(--primary);
+  font-size: 15px;
+  font-family: 'Outfit', sans-serif;
+  text-shadow: 1px 1px 0px #000;
 }
 
 /* --- Thought Bubble --- */

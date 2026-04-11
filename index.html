@@ -30,17 +30,14 @@
           </div>
         </header>
         
-        <!-- Chat Panel (Hidden by default) -->
-        <div id="chat-panel" class="side-panel">
-          <div class="panel-header">
-            <h3>Office Chat</h3>
-            <button class="close-panel">×</button>
-          </div>
+        <!-- Minecraft Style Chat -->
+        <div id="chat-panel" class="minecraft-chat">
           <div class="chat-messages">
-            <div class="msg system">Welcome to the Virtual Office.</div>
+            <div class="msg system">Pressione 'T' ou 'Enter' para falar no chat.</div>
           </div>
           <div class="chat-input-area">
-            <input type="text" placeholder="Type a message..." id="chat-input" />
+            <span class="chat-prefix">></span>
+            <input type="text" id="chat-input" autocomplete="off" />
           </div>
         </div>
         
