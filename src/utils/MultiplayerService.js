@@ -88,11 +88,6 @@ export class MultiplayerService {
                     } else {
                         setTimeout(() => this.updatePresence(), 500);
                     }
-                    
-                    // Fallback para Sync garantir que não suma
-                    setInterval(() => {
-                        this.updatePresence();
-                    }, 3000);
                 }
             });
     }
