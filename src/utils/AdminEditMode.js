@@ -719,7 +719,13 @@ export class AdminEditMode {
             bounds[s.id] = { tileX: s.tileX, tileY: s.tileY, tileW: s.tileW, tileH: s.tileH };
         });
         localStorage.setItem('escritorio-sectors-bounds', JSON.stringify(bounds));
-        this._toast('Sectores salvos ✓');
+        
+        // Sincroniza Setores com Supabase
+        if (this.scene.multiplayer && this.scene.multiplayer.active) {
+            this.scene.multiplayer.saveSectors(bounds);
+        }
+        
+        this._toast('Setores sincronizados ✓');
     }
 
     loadLocal() {

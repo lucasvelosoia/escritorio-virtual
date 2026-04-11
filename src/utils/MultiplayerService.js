@@ -310,27 +310,60 @@ export class MultiplayerService {
     // ── Novos métodos de persistência ──
     async saveLayout(layoutData) {
         if (!this.active) return;
-        await this.supabase.from('office_layout').upsert({
+        const { error } = await this.supabase.from('office_layout').upsert({
             id: 'main-office',
             data: layoutData
         });
+        if (error) {
+            console.error('Erro ao salvar layout no Supabase (verifique RLS):', error.message);
+        } else {
+            console.log('Layout salvo com sucesso no banco!');
+        }
     }
 
     async getLayout() {
         if (!this.active) return null;
-        const { data } = await this.supabase.from('office_layout').select('data').eq('id', 'main-office').single();
+        const { data, error } = await this.supabase.from('office_layout').select('data').eq('id', 'main-office').single();
+        if (error && error.code !== 'PGRST116') console.warn('Erro ao carregar layout:', error.message);
+        return data?.data;
+    }
+
+    async saveSectors(sectData) {
+        if (!this.active) return;
+        const { error } = await this.supabase.from('office_layout').upsert({
+            id: 'main-sectors',
+            data: sectData
+        });
+        if (error) {
+            console.error('Erro ao salvar setores no Supabase (verifique RLS):', error.message);
+        } else {
+            console.log('Setores salvos com sucesso no banco!');
+        }
+    }
+
+    async getSectors() {
+        if (!this.active) return null;
+        const { data, error } = await this.supabase.from('office_layout').select('data').eq('id', 'main-sectors').single();
+        if (error && error.code !== 'PGRST116') console.warn('Erro ao carregar setores:', error.message);
         return data?.data;
     }
 
     async saveEmployees(employees) {
         if (!this.active) return;
         // Simplificado: deleta e reinsere para manter o estado global
-        await this.supabase.from('employees').delete().neq('id', '00000000-0000-0000-0000-000000000000'); 
-        await this.supabase.from('employees').insert(employees.map(e => ({
+        const { error: delError } = await this.supabase.from('employees').delete().neq('id', '00000000-0000-0000-0000-000000000000'); 
+        if (delError) console.error('Erro ao limpar funcionários:', delError.message);
+
+        const { error: insError } = await this.supabase.from('employees').insert(employees.map(e => ({
             name: e.name,
             sector_id: e.sectorId,
             avatar_full_key: e.avatarFullKey
         })));
+        if (insError) {
+            console.error('Erro ao salvar funcionários no Supabase (verifique RLS):', insError.message);
+        } else {
+            console.log('Funcionários salvos com sucesso!');
+        }
     }
 
     async getEmployees() {

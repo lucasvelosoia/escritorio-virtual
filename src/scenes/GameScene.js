@@ -54,10 +54,12 @@ export class GameScene extends Phaser.Scene {
     async _loadInitialData() {
         let layout = null;
         let employees = null;
+        let sectorsData = null;
         
         if (this.multiplayer.active) {
             layout = await this.multiplayer.getLayout();
             employees = await this.multiplayer.getEmployees();
+            sectorsData = await this.multiplayer.getSectors();
         }
         
         // Fallback p/ localStorage se o banco estiver vazio ou inativo
@@ -70,12 +72,30 @@ export class GameScene extends Phaser.Scene {
 
         // Se o Supabase tiver funcionários, substitui os locais
         if (employees && employees.length > 0) {
-            // Atualiza o array global (importado)
             EMPLOYEES.length = 0; 
             EMPLOYEES.push(...employees);
         }
-        
-        // this._spawnEmployees(); // Removidos os funcionários fakes
+
+        // Sincroniza setores vindos do Supabase ou localStorage
+        if (!sectorsData) {
+            try { sectorsData = JSON.parse(localStorage.getItem('escritorio-sectors-bounds')); } catch(e) {}
+        }
+        if (sectorsData) {
+            import('../data/sectors.js').then(module => {
+                const SECTORS_REF = module.SECTORS;
+                SECTORS_REF.forEach(s => {
+                    if (sectorsData[s.id]) {
+                        s.tileX = sectorsData[s.id].tileX;
+                        s.tileY = sectorsData[s.id].tileY;
+                        s.tileW = sectorsData[s.id].tileW;
+                        s.tileH = sectorsData[s.id].tileH;
+                    }
+                });
+                if (this.scene.isActive(this.key)) {
+                    this._drawSectorZones();
+                }
+            });
+        }
     }
 
     create() {
