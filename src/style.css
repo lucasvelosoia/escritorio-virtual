@@ -564,6 +564,23 @@ body {
   cursor: pointer;
   border: none;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.meet-btn.toggle-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  min-width: 120px;
+}
+
+.meet-btn.toggle-btn.on {
+  background: #7c3aed;
+  color: white;
+  border-color: #a78bfa;
 }
 
 .leave-btn {
@@ -578,6 +595,25 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .share-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+.participant-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+  background: #1e293b;
+}
+
+.participant-card .video-placeholder {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  background: #0f172a;
+}
+
+.participant-card .video-placeholder canvas {
+  margin-bottom: 5px;
+}
 
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(1.05); }

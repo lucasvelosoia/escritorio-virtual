@@ -731,7 +731,6 @@ export class GameScene extends Phaser.Scene {
         if (!modal || modal.classList.contains('active')) return;
         modal.classList.add('active');
         
-        // Bloqueia teclado do Phaser
         if (this.input && this.input.keyboard) this.input.keyboard.enabled = false;
         
         this._updateMeetingUI();
@@ -746,8 +745,52 @@ export class GameScene extends Phaser.Scene {
         if (leaveBtn) {
             leaveBtn.onclick = () => {
                 this.player.setPosition(22 * 32, 7 * 32); 
+                this._stopMedia();
                 this._closeMeeting();
             };
+        }
+
+        // Binds de Mic e Cam
+        const micBtn = document.getElementById('btn-toggle-mic');
+        const camBtn = document.getElementById('btn-toggle-cam');
+        
+        if (micBtn) micBtn.onclick = () => this._toggleMedia('mic');
+        if (camBtn) camBtn.onclick = () => this._toggleMedia('cam');
+    }
+
+    async _toggleMedia(type) {
+        if (type === 'mic') {
+            this.isMicOn = !this.isMicOn;
+            const btn = document.getElementById('btn-toggle-mic');
+            btn.innerText = this.isMicOn ? '🎤 Mic On' : '🎤 Mic Off';
+            btn.classList.toggle('on', this.isMicOn);
+        } else {
+            this.isCamOn = !this.isCamOn;
+            const btn = document.getElementById('btn-toggle-cam');
+            btn.innerText = this.isCamOn ? '📹 Cam On' : '📹 Cam Off';
+            btn.classList.toggle('on', this.isCamOn);
+            
+            if (this.isCamOn) {
+                try {
+                    this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: this.isMicOn });
+                    this._updateMeetingUI(); // Força re-render para mostrar o vídeo
+                } catch (e) {
+                    console.error("Erro ao acessar câmera:", e);
+                    this.isCamOn = false;
+                    btn.classList.remove('on');
+                    btn.innerText = '📹 Cam Erro';
+                }
+            } else {
+                this._stopMedia();
+                this._updateMeetingUI();
+            }
+        }
+    }
+
+    _stopMedia() {
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(track => track.stop());
+            this.localStream = null;
         }
     }
 
@@ -756,6 +799,7 @@ export class GameScene extends Phaser.Scene {
         if (modal) modal.classList.remove('active');
         if (this.input && this.input.keyboard) this.input.keyboard.enabled = true;
         
+        this._stopMedia();
         if (this._meetingTimer) {
             this._meetingTimer.remove();
             this._meetingTimer = null;
@@ -768,9 +812,12 @@ export class GameScene extends Phaser.Scene {
         if (!grid) return;
 
         grid.innerHTML = '';
+        
+        // 1. Eu
         this._addParticipantCard(grid, this.playerFullKey, 'Você', true);
         let count = 1;
 
+        // 2. Outros
         if (this.multiplayer.active) {
             const reuniao = SECTORS.find(s => s.id === 'reuniao');
             if (reuniao) {
@@ -785,25 +832,55 @@ export class GameScene extends Phaser.Scene {
                 });
             }
         }
+        
         if (countTxt) countTxt.innerText = `${count} Participante${count > 1 ? 's' : ''}`;
     }
 
     _addParticipantCard(container, key, name, isMe) {
         const card = document.createElement('div');
         card.className = `participant-card ${isMe ? 'me' : ''}`;
-        const canvas = document.createElement('canvas');
-        canvas.width = 64; canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        const tex = this.textures.get(key);
-        if (tex) {
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(tex.getSourceImage(), 0, 0, 32, 32, 0, 0, 64, 64);
+        
+        if (isMe && this.isCamOn && this.localStream) {
+            const video = document.createElement('video');
+            video.autoplay = true;
+            video.playsInline = true;
+            video.srcObject = this.localStream;
+            card.appendChild(video);
+        } else {
+            const placeholder = document.createElement('div');
+            placeholder.className = 'video-placeholder';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const tex = this.textures.get(key);
+            if (tex) {
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(tex.getSourceImage(), 0, 0, 32, 32, 0, 0, 64, 64);
+            }
+            placeholder.appendChild(canvas);
+            
+            const txt = document.createElement('span');
+            txt.innerText = 'Câmera Desligada';
+            txt.style.fontSize = '8px';
+            txt.style.color = '#64748b';
+            placeholder.appendChild(txt);
+            
+            card.appendChild(placeholder);
         }
-        card.appendChild(canvas);
+        
         const nameEl = document.createElement('div');
         nameEl.className = 'name';
+        nameEl.style.position = 'absolute';
+        nameEl.style.bottom = '10px';
+        nameEl.style.left = '10px';
+        nameEl.style.background = 'rgba(0,0,0,0.5)';
+        nameEl.style.padding = '2px 8px';
+        nameEl.style.borderRadius = '4px';
         nameEl.innerText = name;
         card.appendChild(nameEl);
+        
         container.appendChild(card);
     }
 }
