@@ -376,6 +376,16 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    _getSectorAt(x, y, w, h, ox = 0, oy = 0) {
+        // Pega o centro do objeto para ver em qual zona ele está
+        const cx = x + (w * (0.5 - ox));
+        const cy = y + (h * (0.5 - oy));
+        return SECTORS.find(s => 
+            cx >= s.pixelX && cx < s.pixelX + s.pixelW && 
+            cy >= s.pixelY && cy < s.pixelY + s.pixelH
+        );
+    }
+
     // ── Restaura layout salvo do localStorage ─────────────────────────
     _loadSavedLayout(layout) {
         layout.forEach(({ key, x, y, angle, depth, scaleX, scaleY, originX, originY, sectorId }) => {
@@ -459,6 +469,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     _drawSectorZones() {
+        // Limpa desenhos anteriores se existirem
+        this.sectorZones.forEach(v => {
+            v.rect.destroy();
+            v.label.destroy();
+        });
+        this.sectorZones.clear();
+
         SECTORS.forEach(s => {
             const hex = s.color;
             // Retângulo de fundo sutil
@@ -470,11 +487,9 @@ export class GameScene extends Phaser.Scene {
             zone.setInteractive({ useHandCursor: true });
             zone.on('pointerdown', (pointer) => {
                 if (this.admin.active || this.taskManager.isOpen()) return;
-                // Abre o Kanban se clicar no chão do setor
                 this.taskManager.open(s);
             });
 
-            // Feedback visual ao passar o mouse no "chão" do setor
             zone.on('pointerover', () => { 
                 if (!this.admin.active) zone.setFillStyle(hex, 0.08).setStrokeStyle(2, hex, 0.4); 
             });
@@ -483,11 +498,12 @@ export class GameScene extends Phaser.Scene {
             });
 
             // Label do setor no topo
+            const labelStr = '#' + (hex !== undefined ? hex.toString(16).padStart(6,'0') : 'ffffff');
             const label = this.add.text(
                 s.pixelX + s.pixelW / 2,
                 s.pixelY + 4,
                 `◈ ${s.label} ◈`,
-                { fontFamily: 'Outfit, monospace', fontSize: '7px', color: '#' + hex.toString(16).padStart(6,'0'),
+                { fontFamily: 'Outfit, monospace', fontSize: '7px', color: labelStr,
                   fontWeight: '800', letterSpacing: '1px',
                   backgroundColor: '#000000aa', padding: { x: 6, y: 3 } }
             ).setOrigin(0.5, 0).setDepth(20);
