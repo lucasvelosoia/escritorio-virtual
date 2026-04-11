@@ -605,10 +605,13 @@ export class GameScene extends Phaser.Scene {
             this.player.body.setVelocity(0,0);
         }
 
-        // Envia posição p/ Supabase a cada 100ms se estiver ativo
-        if (this.multiplayer.active && this.time.now > this._lastUpdate + 100) {
-            this.multiplayer.updatePresence();
-            this._lastUpdate = this.time.now;
+        // Envia posição via Broadcast a cada 50ms se estiver ativo (apenas se movendo)
+        if (this.multiplayer.active && this.time.now > this._lastUpdate + 50) {
+            if (moving || this._wasMoving) {
+                this.multiplayer.sendMovement(this.player);
+                this._lastUpdate = this.time.now;
+            }
+            this._wasMoving = moving;
         }
 
         // this._updateNPCs(this.time.now, 0); // Removido movimento de NPCs

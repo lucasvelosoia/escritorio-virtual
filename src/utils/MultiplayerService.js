@@ -60,6 +60,15 @@ export class MultiplayerService {
             .on('broadcast', { event: 'chat' }, ({ payload }) => {
                 this._handleChatMessage(payload);
             })
+            .on('broadcast', { event: 'move' }, ({ payload }) => {
+                if (payload.id === this.sessionId) return;
+                
+                if (!this.remotePlayers.has(payload.id)) {
+                    this._createRemotePlayer(payload.id, payload);
+                } else {
+                    this._updateRemotePlayer(payload.id, payload);
+                }
+            })
             .subscribe(async (status) => {
                 console.log('Supabase Channel Status:', status);
                 if (status === 'SUBSCRIBED') {
@@ -86,6 +95,23 @@ export class MultiplayerService {
         } catch (e) {
             console.warn('Erro ao atualizar presença:', e);
         }
+    }
+
+    sendMovement(player) {
+        if (!this.active || !this.isSubscribed) return;
+        this.channel.send({
+            type: 'broadcast',
+            event: 'move',
+            payload: {
+                id: this.sessionId,
+                name: this.userName,
+                x: player.x,
+                y: player.y,
+                fullKey: this.scene.playerFullKey,
+                dir: this.scene.currentDir,
+                anim: player.anims.currentAnim?.key
+            }
+        });
     }
 
     async sendChatMessage(text) {
