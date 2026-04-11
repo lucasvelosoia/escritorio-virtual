@@ -75,14 +75,19 @@ export class MultiplayerService {
                 console.log('Supabase Channel Status:', status);
                 if (status === 'SUBSCRIBED') {
                     this.isSubscribed = true;
-                    await this.updatePresence();
+                    // Garantir que o player exista antes de enviar
+                    if (this.scene && this.scene.player) {
+                        await this.updatePresence();
+                    } else {
+                        setTimeout(() => this.updatePresence(), 500);
+                    }
                 }
             });
     }
 
     async updatePresence() {
         if (!this.active || !this.isSubscribed) return;
-        const player = this.scene.player;
+        const player = this.scene && this.scene.player;
         if (!player) return;
 
         try {
