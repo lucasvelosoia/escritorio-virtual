@@ -734,9 +734,14 @@ export class GameScene extends Phaser.Scene {
         if (this.input && this.input.keyboard) this.input.keyboard.enabled = false;
         
         const container = document.getElementById('jitsi-container');
+        const countTxt = document.getElementById('meeting-participants-count');
+        
         if (container && window.JitsiMeetExternalAPI) {
             const domain = 'meet.jit.si';
-            const roomName = 'VirtualOfficeMeeting-' + (window.location.hostname || 'local') + '-' + (import.meta.env.VITE_SUPABASE_URL || 'default').split('//')[1].split('.')[0];
+            // Nome de sala ultra simplificado e único
+            const projectID = (import.meta.env.VITE_SUPABASE_URL || 'office').split('.')[0].split('//').pop();
+            const roomName = `VirtualOffice_${projectID}_MeetingRoom`;
+            
             const options = {
                 roomName: roomName,
                 width: '100%',
@@ -746,20 +751,26 @@ export class GameScene extends Phaser.Scene {
                     displayName: this.multiplayer.userName || 'Usuário'
                 },
                 configOverwrite: {
-                    prejoinPageEnabled: false, // Pula a tela de 'Join Meeting' que trava no iframe
+                    prejoinPageEnabled: false,
                     startWithAudioMuted: false,
                     startWithVideoMuted: false,
-                    disableDeepLinking: true // Evita abrir app mobile se estiver no celular
+                    disableDeepLinking: true,
+                    remoteVideoMenu: { disableKick: true }
                 },
                 interfaceConfigOverwrite: {
                     SHOW_JITSI_WATERMARK: false,
+                    SHOW_WATERMARK_FOR_GUESTS: false,
+                    DEFAULT_REMOTE_DISPLAY_NAME: 'Colega',
                     TOOLBAR_BUTTONS: [
                         'microphone', 'camera', 'desktop', 'chat', 'raisehand',
-                        'fodeviceselection', 'hangup', 'tileview', 'settings'
+                        'fodeviceselection', 'hangup', 'tileview'
                     ],
                 }
             };
+            
             this.jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
+            
+            if (countTxt) countTxt.innerText = 'Conectado à Reunião';
             
             this.jitsiApi.addEventListener('readyToClose', () => {
                 this._closeMeeting();
