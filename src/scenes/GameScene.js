@@ -48,7 +48,6 @@ export class GameScene extends Phaser.Scene {
         });
         this._promptText = null;
         this._lastUpdate = 0;
-        this._lastUpdate = 0;
     }
 
     async _loadInitialData() {
@@ -57,17 +56,28 @@ export class GameScene extends Phaser.Scene {
         let sectorsData = null;
         
         if (this.multiplayer.active) {
+            console.log('Buscando dados no Supabase...');
             layout = await this.multiplayer.getLayout();
             employees = await this.multiplayer.getEmployees();
             sectorsData = await this.multiplayer.getSectors();
         }
         
-        // Fallback p/ localStorage se o banco estiver vazio ou inativo
-        if (!layout) layout = this.admin.loadLocal();
-        if (layout) this._loadSavedLayout(layout);
-        else {
-            this._decorateMarketing(); this._decorateDesenvolvimento();
-            this._decorateRH(); this._decorateReuniao();
+        // Se o Supabase falhar ou estiver vazio, tenta LocalStorage
+        if (!layout || (Array.isArray(layout) && layout.length === 0)) {
+            console.log('Sem dados no Supabase, tentando local...');
+            layout = this.admin.loadLocal();
+        }
+
+        // Se encontrou layout (Supabase ou Local), restaura. Caso contrário, usa padrão.
+        if (layout && Array.isArray(layout) && layout.length > 0) {
+            console.log('Restaurando layout:', layout.length, 'itens');
+            this._loadSavedLayout(layout);
+        } else {
+            console.log('Carregando decoração padrão (primeira vez)');
+            this._decorateMarketing(); 
+            this._decorateDesenvolvimento();
+            this._decorateRH(); 
+            this._decorateReuniao();
         }
 
         // Se o Supabase tiver funcionários, substitui os locais
@@ -81,21 +91,19 @@ export class GameScene extends Phaser.Scene {
             try { sectorsData = JSON.parse(localStorage.getItem('escritorio-sectors-bounds')); } catch(e) {}
         }
         if (sectorsData) {
-            import('../data/sectors.js').then(module => {
-                const SECTORS_REF = module.SECTORS;
-                SECTORS_REF.forEach(s => {
-                    if (sectorsData[s.id]) {
-                        s.tileX = sectorsData[s.id].tileX;
-                        s.tileY = sectorsData[s.id].tileY;
-                        s.tileW = sectorsData[s.id].tileW;
-                        s.tileH = sectorsData[s.id].tileH;
-                    }
-                });
-                if (this.scene.isActive(this.key)) {
-                    this._drawSectorZones();
+            SECTORS.forEach(s => {
+                if (sectorsData[s.id]) {
+                    s.tileX = sectorsData[s.id].tileX;
+                    s.tileY = sectorsData[s.id].tileY;
+                    s.tileW = sectorsData[s.id].tileW;
+                    s.tileH = sectorsData[s.id].tileH;
                 }
             });
+            // Se as zonas já estiverem desenhadas, atualiza-as
+            this._drawSectorZones();
         }
+        
+        this.events.emit('employees-updated');
     }
 
     create() {
