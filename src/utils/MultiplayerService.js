@@ -3,10 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 export class MultiplayerService {
     constructor(scene) {
         this.scene = scene;
-        const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-        const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-        this.url = rawUrl.trim();
-        this.key = rawKey.trim();
+        let rawUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lwyfypassezmligarsoo.supabase.co';
+        let rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3eWZ5cGFzc2V6bWxpZ2Fyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTgwNTksImV4cCI6MjA5MTIzNDA1OX0.nstpuFQOALGq1zG2eS16cb3tKfTvYl3-rIaYCNuAwLk';
+        
+        this.url = rawUrl.replace(/["']/g, "").trim();
+        this.key = rawKey.replace(/["']/g, "").trim();
+        
+        if (this.url.includes('SUA_URL') || !this.key) {
+            this.url = 'https://lwyfypassezmligarsoo.supabase.co';
+            this.key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3eWZ5cGFzc2V6bWxpZ2Fyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTgwNTksImV4cCI6MjA5MTIzNDA1OX0.nstpuFQOALGq1zG2eS16cb3tKfTvYl3-rIaYCNuAwLk';
+        }
         
         if (!this.url || !this.key || this.url.includes('SUA_URL')) {
             console.warn('Supabase não configurado. Rodando em modo Local.');
