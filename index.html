@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src='https://meet.jit.si/external_api.js'></script>
+    <script src='https://8x8.vc/external_api.js'></script>
   </head>
   <body>
     <!-- App Wrapper for HUD -->
@@ -88,11 +88,12 @@
               <h2 id="meeting-room-name">Sala de Reunião</h2>
               <div id="meeting-participants-count">Carregando chamada...</div>
             </div>
-            <div id="jitsi-container" style="flex-grow:1; border-radius:16px; overflow:hidden; background:#000;">
+            <div id="jitsi-container" style="flex-grow:1; border-radius:16px; overflow:hidden; background:#000; position:relative;">
               <!-- Jitsi Iframe will be injected here -->
             </div>
             <div class="meeting-footer">
-              <button class="meet-btn leave-btn" id="btn-leave-meeting" style="width:100%; max-width:400px">Sair da Reunião</button>
+              <a id="meeting-external-link" href="#" target="_blank" class="meet-btn share-btn" style="text-decoration:none; display:none;">Abrir em Nova Aba (Failsafe)</a>
+              <button class="meet-btn leave-btn" id="btn-leave-meeting" style="padding: 10px 40px;">Sair da Reunião</button>
             </div>
           </div>
         </div>
