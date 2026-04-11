@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src='https://8x8.vc/vpaas-magic-cookie-2144d039f99e4b679549a170fb989606/external_api.js'></script>
   </head>
   <body>
     <!-- App Wrapper for HUD -->
@@ -85,16 +86,13 @@
             <div class="meeting-header">
               <div class="status-badge">🔴 LIVE MEETING</div>
               <h2 id="meeting-room-name">Sala de Reunião</h2>
-              <div id="meeting-participants-count">0 Participantes</div>
+              <div id="meeting-participants-count">Carregando chamada...</div>
             </div>
-            <div id="meeting-grid" class="participant-grid">
-              <!-- Participantes via JS -->
+            <div id="jitsi-container" style="flex-grow:1; border-radius:16px; overflow:hidden; background:#000;">
+              <!-- Jitsi Iframe will be injected here -->
             </div>
             <div class="meeting-footer">
-              <button class="meet-btn toggle-btn off" id="btn-toggle-mic">🎤 Mic Off</button>
-              <button class="meet-btn toggle-btn off" id="btn-toggle-cam">📹 Cam Off</button>
-              <button class="meet-btn share-btn">Compartilhar Tela</button>
-              <button class="meet-btn leave-btn" id="btn-leave-meeting">Sair da Reunião</button>
+              <button class="meet-btn leave-btn" id="btn-leave-meeting" style="width:100%; max-width:400px">Sair da Reunião</button>
             </div>
           </div>
         </div>
