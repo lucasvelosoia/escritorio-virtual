@@ -735,9 +735,10 @@ export class GameScene extends Phaser.Scene {
         
         const container = document.getElementById('jitsi-container');
         if (container && window.JitsiMeetExternalAPI) {
-            const domain = '8x8.vc';
+            const domain = 'meet.jit.si';
+            const roomName = 'VirtualOfficeMeeting-' + (window.location.hostname || 'local') + '-' + (import.meta.env.VITE_SUPABASE_URL || 'default').split('//')[1].split('.')[0];
             const options = {
-                roomName: 'vpaas-magic-cookie-2144d039f99e4b679549a170fb989606/VirtualOfficeMeetingRom-' + (window.location.hostname || 'local'),
+                roomName: roomName,
                 width: '100%',
                 height: '100%',
                 parentNode: container,
@@ -745,18 +746,16 @@ export class GameScene extends Phaser.Scene {
                     displayName: this.multiplayer.userName || 'Usuário'
                 },
                 configOverwrite: {
-                    prejoinPageEnabled: false,
+                    prejoinPageEnabled: false, // Pula a tela de 'Join Meeting' que trava no iframe
                     startWithAudioMuted: false,
-                    startWithVideoMuted: false
+                    startWithVideoMuted: false,
+                    disableDeepLinking: true // Evita abrir app mobile se estiver no celular
                 },
                 interfaceConfigOverwrite: {
+                    SHOW_JITSI_WATERMARK: false,
                     TOOLBAR_BUTTONS: [
-                        'microphone', 'camera', 'closedcaptions', 'desktop', 'embedmeeting', 'fullscreen',
-                        'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-                        'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-                        'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-                        'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
-                        'security'
+                        'microphone', 'camera', 'desktop', 'chat', 'raisehand',
+                        'fodeviceselection', 'hangup', 'tileview', 'settings'
                     ],
                 }
             };
