@@ -170,6 +170,28 @@ export class AdminEditMode {
             scrollbar-width:thin; scrollbar-color:#334155 transparent;
         `;
         panel.appendChild(body);
+        
+        // ── BOTÃO SALVAR GERAL (Destaque) ─────────────────────────────
+        const saveAllBtn = document.createElement('button');
+        saveAllBtn.innerHTML = '💾 SALVAR LAYOUT AGORA';
+        saveAllBtn.style.cssText = `
+            width: calc(100% - 16px); margin: 8px; padding: 12px;
+            background: #7c3aed; color: #fff; border: none;
+            border-radius: 8px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+            font-family: monospace; font-size: 11px; transition: all 0.2s;
+            flex-shrink: 0;
+        `;
+        saveAllBtn.onmouseover = () => saveAllBtn.style.background = '#6d28d9';
+        saveAllBtn.onmouseout  = () => saveAllBtn.style.background = '#7c3aed';
+        saveAllBtn.onclick = () => {
+            this.save();
+            this.saveSectors();
+            if (this.scene.multiplayer && this.scene.multiplayer.active) {
+                this.scene.multiplayer.saveEmployees(EMPLOYEES);
+            }
+        };
+        body.appendChild(saveAllBtn);
 
         // ── NOVO: Gerenciamento de Setores ────────────────────────────
         const sectorHeader = document.createElement('div');
