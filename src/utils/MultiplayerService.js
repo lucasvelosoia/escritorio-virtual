@@ -25,7 +25,8 @@ export class MultiplayerService {
         
         this.channel = this.supabase.channel('virtual-office-room', {
             config: {
-                presence: { key: this.sessionId }
+                presence: { key: this.sessionId },
+                broadcast: { self: false }
             }
         });
 
@@ -81,6 +82,11 @@ export class MultiplayerService {
                     } else {
                         setTimeout(() => this.updatePresence(), 500);
                     }
+                    
+                    // Fallback para Sync garantir que não suma
+                    setInterval(() => {
+                        this.updatePresence();
+                    }, 3000);
                 }
             });
     }
@@ -97,7 +103,7 @@ export class MultiplayerService {
                 y: player.y,
                 fullKey: this.scene.playerFullKey,
                 dir: this.scene.currentDir,
-                anim: player.anims.currentAnim?.key
+                anim: player.anims.currentAnim?.key || null
             });
         } catch (e) {
             console.warn('Erro ao atualizar presença:', e);
@@ -116,7 +122,7 @@ export class MultiplayerService {
                 y: player.y,
                 fullKey: this.scene.playerFullKey,
                 dir: this.scene.currentDir,
-                anim: player.anims.currentAnim?.key
+                anim: player.anims.currentAnim?.key || null
             }
         });
     }
