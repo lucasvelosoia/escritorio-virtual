@@ -525,6 +525,14 @@ export class GameScene extends Phaser.Scene {
     }
 
     update() {
+        // Se um campo de input do DOM estiver focado, ignora completamente as teclas de movimento
+        if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            this.player.body.setVelocity(0,0);
+            const key = `${this.playerFullKey}-${this.currentDir}-idle`;
+            if (this.anims.exists(key)) this.player.play(key, true);
+            return;
+        }
+
         const {left,right,up,down} = this.cursors;
         const {A,D,W,S} = this.wasdKeys;
         let vx=0, vy=0, moving=false;
@@ -697,8 +705,12 @@ export class GameScene extends Phaser.Scene {
         this.cursors  = this.input.keyboard.createCursorKeys();
         this.wasdKeys = this.input.keyboard.addKeys('W,A,S,D,E');
         
+        // Garante que o Phaser NÃO bloqueie o teclado (para os inputs de HTML funcionarem)
+        this.input.keyboard.removeCapture('W,A,S,D,E,UP,DOWN,LEFT,RIGHT,SPACE');
+        
         // Garante que o evento do 'E' seja re-atachado
         this.wasdKeys.E.on('down', () => {
+            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
             this._handleInteraction();
         });
     }

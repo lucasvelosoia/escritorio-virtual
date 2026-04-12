@@ -142,9 +142,6 @@ export class EmployeeManager {
         this._renderEmployeeList();
         this._updateAvatarPreview();
         this.isOpening = false;
-        
-        // Bloqueia input do Phaser
-        if (this.scene.input.keyboard) this.scene.input.keyboard.enabled = false;
     }
 
     _setupListeners() {
@@ -333,7 +330,6 @@ export class EmployeeManager {
                 this.el.remove();
                 this.el = null;
             }
-            if (this.scene.input.keyboard) this.scene.input.keyboard.enabled = true;
         }, 300);
     }
 }
