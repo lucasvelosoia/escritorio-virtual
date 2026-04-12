@@ -79,11 +79,6 @@ export class GameScene extends Phaser.Scene {
             this._decorateReuniao();
         }
 
-        if (!whiteboardData) {
-            try { whiteboardData = JSON.parse(localStorage.getItem('escritorio-whiteboard-bounds')); } catch(e) {}
-        }
-        this._createWhiteboard(whiteboardData);
-
         if (employees && employees.length > 0) {
             EMPLOYEES.length = 0; 
             EMPLOYEES.push(...employees);
@@ -223,11 +218,15 @@ export class GameScene extends Phaser.Scene {
                 return;
             }
             if (this.activeSector && this.activeSector.id !== 'reuniao') {
-                this.workstationMenu.open(
-                    this.activeSector,
-                    () => this.browserUI.open(),
-                    () => this.taskManager.open(this.activeSector)
-                );
+                if (this.activeSector.id === 'whiteboard') {
+                    this.whiteboardUI.open();
+                } else {
+                    this.workstationMenu.open(
+                        this.activeSector,
+                        () => this.browserUI.open(),
+                        () => this.taskManager.open(this.activeSector)
+                    );
+                }
             }
         });
 
@@ -428,11 +427,15 @@ export class GameScene extends Phaser.Scene {
             zone.setInteractive({ useHandCursor: true });
             zone.on('pointerdown', () => { 
                 if (!this.admin.active && !this.taskManager.isOpen() && s.id !== 'reuniao') {
-                    this.workstationMenu.open(
-                        s,
-                        () => this.browserUI.open(),
-                        () => this.taskManager.open(s)
-                    );
+                    if (s.id === 'whiteboard') {
+                        this.whiteboardUI.open();
+                    } else {
+                        this.workstationMenu.open(
+                            s,
+                            () => this.browserUI.open(),
+                            () => this.taskManager.open(s)
+                        );
+                    }
                 }
             });
             const labelStr = '#' + (hex !== undefined ? hex.toString(16).padStart(6,'0') : 'ffffff');
@@ -529,12 +532,11 @@ export class GameScene extends Phaser.Scene {
             this._promptText.setPosition(nearest.sprite.x + 16, nearest.sprite.y - 6).setVisible(true);
         } else this._promptText.setVisible(false);
 
-        // Proximidade Whiteboard
-        const distWB = this.whiteboardArea ? Phaser.Math.Distance.Between(px, py, this.whiteboardArea.x, this.whiteboardArea.y + 16) : Infinity;
-        this.nearWhiteboard = distWB < RANGE;
+        // Proximidade Whiteboard (Agora baseada em Setor)
+        this.nearWhiteboard = (this.activeSector && this.activeSector.id === 'whiteboard');
         if (this.nearWhiteboard && !this.admin.active) {
             this._promptText.setText('[ E ] Abrir Lousa');
-            this._promptText.setPosition(this.whiteboardArea.x, this.whiteboardArea.y - 12).setVisible(true);
+            this._promptText.setPosition(this.player.x, this.player.y - 32).setVisible(true);
         }
 
         // Verificação de proximidade Jukebox
@@ -633,29 +635,6 @@ export class GameScene extends Phaser.Scene {
 
         const leaveBtn = document.getElementById('btn-leave-meeting');
         if (leaveBtn) leaveBtn.onclick = () => { this.player.setPosition(22 * 32, 7 * 32); this._closeMeeting(); };
-    }
-
-    _createWhiteboard(data) {
-        // Se houver dados, usamos. Se não, usamos o padrão na sala de reunião.
-        const x = data ? data.x : 25 * 32;
-        const y = data ? data.y : 4.2 * 32;
-        const w = data ? data.w : 120;
-        const h = data ? data.h : 40;
-
-        this.whiteboardArea = this.add.rectangle(x, y, w, h, 0x60a5fa, 0.05)
-            .setOrigin(0.5, 0.5)
-            .setDepth(2) // Mesma profundidade dos setores
-            .setStrokeStyle(2, 0x60a5fa, 0.4);
-        
-        this.whiteboardText = this.add.text(x, y, '◈ WHITEBOARD ◈', {
-            fontSize: '8px', color: '#60a5fa', fontWeight: '800',
-            fontFamily: 'Outfit, monospace', backgroundColor: '#00000088', padding: { x: 6, y: 3 }
-        }).setOrigin(0.5, 0.5).setDepth(21);
-
-        this.whiteboardArea.setInteractive({ useHandCursor: true });
-        this.whiteboardArea.on('pointerdown', () => {
-             if (!this.admin.active) this.whiteboardUI.open();
-        });
     }
 
     _closeMeeting() {

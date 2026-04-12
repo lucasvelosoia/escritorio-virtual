@@ -199,19 +199,7 @@ export class AdminEditMode {
         sectorHeader.textContent = 'EDITAR ÁREAS E SETORES';
         body.appendChild(sectorHeader);
 
-        // ── ITEM DA LOUSA (WHITEBOARD) INTEGRADO ──
-        const wbItem = document.createElement('div');
-        wbItem.style.cssText = `padding:8px; border-radius:8px; background:#1e293b; margin-bottom:8px; border-left:3px solid #60a5fa;`;
-        wbItem.innerHTML = `
-            <div style="font-size:9px; color:#fff; font-weight:600; margin-bottom:4px">◈ Whiteboard</div>
-            <button id="draw-wb-btn" style="
-                width:100%; padding:4px; background:rgba(96, 165, 250, 0.05); color:#60a5fa;
-                border:1px solid #60a5fa; border-radius:4px; font-size:9px;
-                cursor:pointer; font-weight:700; transition: all .2s;
-            ">✏️ Redesenhar Lousa</button>
-        `;
-        wbItem.querySelector('#draw-wb-btn').onclick = () => this._startDrawingWhiteboard(wbItem.querySelector('#draw-wb-btn'));
-        body.appendChild(wbItem);
+        // A lousa (Whiteboard) aparecerá no loop SECTORS abaixo automaticamente
 
         SECTORS.forEach(s => {
             const hex = '#' + s.color.toString(16).padStart(6,'0');
@@ -568,47 +556,6 @@ export class AdminEditMode {
     }
 
     // ── Modo "desenhar lousa" ─────────────────────────────────────────
-    _startDrawingWhiteboard(btn) {
-        this._cancelAdd();
-        btn.style.background = '#60a5fa';
-        btn.style.color      = '#fff';
-        this._toast('Clique e arraste p/ desenhar a LOUSA');
-
-        this._onDrawDown = (pointer) => {
-            if (pointer.event.target.closest('#asset-panel')) return;
-            const tx = Math.floor(pointer.worldX / SNAP);
-            const ty = Math.floor(pointer.worldY / SNAP);
-            this._startPoint = { tx, ty };
-        };
-
-        this._onDrawMove = (pointer) => {
-            if (!this._startPoint) return;
-            const tx = Math.floor(pointer.worldX / SNAP);
-            const ty = Math.floor(pointer.worldY / SNAP);
-            
-            const x1 = Math.min(this._startPoint.tx, tx);
-            const y1 = Math.min(this._startPoint.ty, ty);
-            const x2 = Math.max(this._startPoint.tx, tx);
-            const y2 = Math.max(this._startPoint.ty, ty);
-            
-            const tw = (x2 - x1) + 1;
-            const th = (y2 - y1) + 1;
-
-            if (this.scene.whiteboardArea) {
-                this.scene.whiteboardArea.setPosition(x1 * SNAP + (tw * SNAP)/2, y1 * SNAP + (th * SNAP)/2);
-                this.scene.whiteboardArea.setSize(tw * SNAP, th * SNAP);
-                if (this.scene.whiteboardText) this.scene.whiteboardText.setPosition(this.scene.whiteboardArea.x, this.scene.whiteboardArea.y);
-            }
-        };
-
-        this._onDrawUp = () => {
-            if (this._startPoint) {
-                this._cancelDrawing();
-                this._toast('Lousa definida ✓');
-                this.saveSectors();
-            }
-        };
-
         this.scene.input.on('pointerdown', this._onDrawDown);
         this.scene.input.on('pointermove', this._onDrawMove);
         this.scene.input.on('pointerup',   this._onDrawUp);
@@ -810,19 +757,7 @@ export class AdminEditMode {
             this.scene.multiplayer.saveSectors(bounds);
         }
 
-        // NOVO: Salva os limites da Lousa também
-        if (this.scene.whiteboardArea) {
-            const wbData = {
-                x: this.scene.whiteboardArea.x,
-                y: this.scene.whiteboardArea.y,
-                w: this.scene.whiteboardArea.width,
-                h: this.scene.whiteboardArea.height
-            };
-            localStorage.setItem('escritorio-whiteboard-bounds', JSON.stringify(wbData));
-            if (this.scene.multiplayer && this.scene.multiplayer.active) {
-                this.scene.multiplayer.saveWhiteboard(wbData);
-            }
-        }
+        // NOVO: A Lousa agora é um setor, então saveSectors já resolve tudo.
         
         this._toast('Configurações sincronizadas ✓');
     }

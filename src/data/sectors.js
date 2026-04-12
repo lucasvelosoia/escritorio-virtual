@@ -74,6 +74,11 @@ export const SECTORS = [
             { id: 't4', title: 'Onboarding novo dev',        status: 'todo',  priority: 'média', assignee: '' },
         ],
     },
+    {
+        id: 'whiteboard', label: 'WHITEBOARD', color: 0x60a5fa,
+        tileX: 23, tileY: 1, tileW: 7, tileH: 2,
+        tasks: [], files: [], projects: []
+    }
 ];
 
 // Aplica bounds salvos
