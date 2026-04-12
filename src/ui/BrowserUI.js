@@ -142,18 +142,24 @@ export class BrowserUI {
             if (e.key === 'Enter') {
                 let url = input.value.trim();
                 if (!url.startsWith('http')) url = 'https://' + url;
-                iframe.src = url;
+                webElement.src = url;
             }
         };
 
         const refreshBtn = header.querySelector('#br-refresh');
         refreshBtn.onclick = () => {
-            iframe.src = iframe.src;
+            webElement.src = webElement.src;
         };
 
         const externalBtn = header.querySelector('#br-external');
         externalBtn.onclick = () => {
-            window.open(iframe.src, '_blank');
+            // No Electron, usamos shell para abrir no navegador real
+            if (isElectron && typeof process !== 'undefined') {
+                const { shell } = require('electron');
+                shell.openExternal(webElement.src);
+            } else {
+                window.open(webElement.src, '_blank');
+            }
         };
 
         // Fechar ao clicar no fundo
