@@ -1,27 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../utils/supabaseClient.js';
 
 export class AuthSystem {
     constructor(callbacks) {
         this.onAuthSuccess = callbacks.onAuthSuccess;
-        let rawUrl = import.meta.env.VITE_SUPABASE_URL || 'https://lwyfypassezmligarsoo.supabase.co';
-        let rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3eWZ5cGFzc2V6bWxpZ2Fyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTgwNTksImV4cCI6MjA5MTIzNDA1OX0.nstpuFQOALGq1zG2eS16cb3tKfTvYl3-rIaYCNuAwLk';
-        
-        let url = rawUrl.replace(/["']/g, "").trim();
-        let key = rawKey.replace(/["']/g, "").trim();
-        
-        if (url.includes('SUA_URL') || !key) {
-            url = 'https://lwyfypassezmligarsoo.supabase.co';
-            key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3eWZ5cGFzc2V6bWxpZ2Fyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NTgwNTksImV4cCI6MjA5MTIzNDA1OX0.nstpuFQOALGq1zG2eS16cb3tKfTvYl3-rIaYCNuAwLk';
-        }
         this.el = null;
-
-        if (!url || !key || url.includes('SUA_URL')) {
-            console.error('ERRO FATAL: Credenciais do Supabase não encontradas no Vercel (.env).');
-            this.showSetupError();
-            return;
-        }
-
-        this.supabase = createClient(url, key);
+        this.supabase = supabase;
     }
 
     showSetupError() {
