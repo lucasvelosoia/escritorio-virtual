@@ -237,8 +237,7 @@ export class GameScene extends Phaser.Scene {
             .setZoom(2.5)
             .setBackgroundColor('#0c0a1e');
 
-        this.cursors  = this.input.keyboard.createCursorKeys();
-        this.wasdKeys = this.input.keyboard.addKeys('W,A,S,D,E');
+        this._setupInputs();
         this._createHUD();
         
         this.wasdKeys.E.on('down', () => {
@@ -687,9 +686,58 @@ export class GameScene extends Phaser.Scene {
         if (modal) modal.classList.remove('active');
         if (this.input.keyboard) this.input.keyboard.enabled = true;
         if (this.jitsiApi) { try { this.jitsiApi.dispose(); } catch(e) {} this.jitsiApi = null; }
+        this._reuniaoClear();
+    }
+
+    _reuniaoClear() {
         const container = document.getElementById('jitsi-container');
         if (container) Array.from(container.children).forEach(c => c.remove());
         const externalLink = document.getElementById('meeting-external-link');
         if (externalLink) externalLink.style.display = 'none';
+    }
+
+    _setupInputs() {
+        if (!this.input || !this.input.keyboard) return;
+        this.cursors  = this.input.keyboard.createCursorKeys();
+        this.wasdKeys = this.input.keyboard.addKeys('W,A,S,D,E');
+        
+        // Garante que o evento do 'E' seja re-atachado
+        this.wasdKeys.E.on('down', () => {
+            this._handleInteraction();
+        });
+    }
+
+    _handleInteraction() {
+        if (this.taskManager && this.taskManager.isOpen()) { this.taskManager.close(); return; }
+        if (this.nearComputer) {
+            const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
+            if (sector && sector.id !== 'reuniao') {
+                this.workstationMenu.open(
+                    sector,
+                    () => this.browserUI.open(),
+                    () => this.taskManager.open(sector)
+                );
+                return;
+            }
+        }
+        if (this.nearJukebox) {
+            this.jukeboxUI.open();
+            return;
+        }
+        if (this.nearWhiteboard) {
+            this.whiteboardUI.open();
+            return;
+        }
+        if (this.activeSector && this.activeSector.id !== 'reuniao') {
+            if (this.activeSector.id === 'whiteboard') {
+                this.whiteboardUI.open();
+            } else {
+                this.workstationMenu.open(
+                    this.activeSector,
+                    () => this.browserUI.open(),
+                    () => this.taskManager.open(this.activeSector)
+                );
+            }
+        }
     }
 }

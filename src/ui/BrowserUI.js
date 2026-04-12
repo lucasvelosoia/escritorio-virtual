@@ -12,9 +12,11 @@ export class BrowserUI {
         this._el = this._build();
         document.body.appendChild(this._el);
         
-        // Bloquear teclado do jogo enquanto o navegador estiver aberto
+        // Bloquear teclado do jogo e liberar teclas capturadas (WASD)
         if (this.scene.input && this.scene.input.keyboard) {
             this.scene.input.keyboard.enabled = false;
+            // Limpa qualquer tecla que o Phaser esteja "segurando" ou bloqueando (fundamental para WASD)
+            this.scene.input.keyboard.removeAllKeys();
         }
 
         requestAnimationFrame(() => {
@@ -37,6 +39,14 @@ export class BrowserUI {
             // Reativar teclado do jogo
             if (this.scene.input && this.scene.input.keyboard) {
                 this.scene.input.keyboard.enabled = true;
+                // RECRIAR TECLAS: Garante que o personagem volte a andar
+                if (typeof this.scene._setupInputs === 'function') {
+                    this.scene._setupInputs();
+                } else {
+                    // Fallback de emergência se o método não existir
+                    this.scene.cursors = this.scene.input.keyboard.createCursorKeys();
+                    this.scene.keys = this.scene.input.keyboard.addKeys('W,A,S,D');
+                }
             }
         }, 400);
     }
