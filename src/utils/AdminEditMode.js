@@ -234,8 +234,14 @@ export class AdminEditMode {
         // ── NOVO: Gerenciamento de Setores ────────────────────────────
         const sectorHeader = document.createElement('div');
         sectorHeader.style.cssText = `font-size:8px; color:#10b981; margin:8px 0 8px; padding:0 4px; letter-spacing:1px; font-weight:700`;
-        sectorHeader.textContent = 'EDITAR ÁREAS E SETORES';
+        sectorHeader.textContent = 'EDITAR TUDO (VERSÃO NOVA)';
         body.appendChild(sectorHeader);
+
+        const debugBtn = document.createElement('button');
+        debugBtn.innerHTML = '⚠️ LIMPAR CACHE LOCAL';
+        debugBtn.style.cssText = `width:100%; padding:6px; background:#f87171; color:#fff; border:none; border-radius:6px; font-size:9px; font-weight:800; cursor:pointer; margin-bottom:10px`;
+        debugBtn.onclick = () => { localStorage.clear(); location.reload(); };
+        body.appendChild(debugBtn);
 
         // A lousa (Whiteboard) aparecerá no loop SECTORS abaixo automaticamente
 
