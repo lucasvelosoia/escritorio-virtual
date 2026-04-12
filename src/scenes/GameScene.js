@@ -155,10 +155,15 @@ export class GameScene extends Phaser.Scene {
         if (!emp) emp = EMPLOYEES[0]; // Fallback no primeiro funcionário para não ficar sempre como visitante se algo travar (como medida visual)
 
         if (emp && this.multiplayer) {
-            this.multiplayer.userName = emp.name;
+            let finalName = emp.name;
+            const userEmail = localStorage.getItem('user-email');
+            if (userEmail === 'admin@escritorio.com') finalName = 'Lucas - CEO';
+            else if (finalName === 'veniopablo') finalName = 'Vênio Pablo';
+
+            this.multiplayer.userName = finalName;
             const displayEl = document.getElementById('user-display-name');
-            if (displayEl) displayEl.textContent = `${emp.name} (Você)`;
-            if (this.playerLabel) this.playerLabel.setText(emp.name);
+            if (displayEl) displayEl.textContent = `${finalName} (Você)`;
+            if (this.playerLabel) this.playerLabel.setText(finalName);
             if (this.multiplayer.isSubscribed) {
                 this.multiplayer.updatePresence(); // Força o broadcast com o novo nome
             }
@@ -313,6 +318,13 @@ export class GameScene extends Phaser.Scene {
         
         if (!emp && EMPLOYEES.length > 0 && userEmail && userEmail !== 'admin@escritorio.com') {
             userName = EMPLOYEES[0].name; // Força exibição de teste caso não encontre
+        }
+
+        // --- MANUAIS DA HUD ---
+        if (userEmail === 'admin@escritorio.com') {
+            userName = 'Lucas - CEO';
+        } else if (userName === 'veniopablo') {
+            userName = 'Vênio Pablo';
         }
 
         if (this.multiplayer) this.multiplayer.userName = userName;
