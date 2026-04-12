@@ -10,12 +10,19 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             webviewTag: true, // Habilita a tag especial que pula bloqueios de site
+            webSecurity: false, // DESATIVA TRAVA DE SEGURANÇA PARA FETCH LOCAL
         }
     });
 
-    // Carrega a versão do seu escritório que está no ar
-    // Ou você pode carregar o http://localhost:5173 se estiver rodando local
-    win.loadURL('https://escritorio-virtual-pi.vercel.app/');
+    // DURANTE O DESENVOLVIMENTO: Carregamos o seu servidor local (Vite)
+    // Para isso, você precisa rodar 'npm run dev' em outro terminal
+    win.loadURL('http://localhost:5173');
+    
+    // CASO QUEIRA CARREGAR A PRODUÇÃO:
+    // win.loadURL('https://escritorio-virtual-pi.vercel.app/');
+    
+    // Abre o console automaticamente para vermos erros
+    win.webContents.openDevTools();
 
     // --- O PULO DO GATO (Nível Master) ---
     // Removemos TODOS os bloqueios de segurança que impedem sites (como Google/YouTube) de abrirem
