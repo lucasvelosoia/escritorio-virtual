@@ -13,25 +13,40 @@ export class JukeboxUI {
     async open() {
         if (this._el) return;
         
-        // Carrega faixas do Supabase
-        const { data, error } = await supabase
-            .from('jukebox_tracks')
-            .select('*')
-            .order('title');
-        
-        if (error) {
-            console.error('Erro ao carregar jukebox:', error);
-            return;
+        console.log('Abrindo Jukebox...');
+        const btn = document.getElementById('btn-jukebox');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span class="btn-icon">⏳</span> Carregando...';
+
+        try {
+            // Carrega faixas do Supabase
+            const { data, error } = await supabase
+                .from('jukebox_tracks')
+                .select('*')
+                .order('title');
+            
+            if (error) throw error;
+            this.tracks = data || [];
+        } catch (err) {
+            console.error('Erro ao carregar jukebox, usando fallbacks:', err);
+            // Fallbacks de segurança se o banco falhar
+            this.tracks = [
+                { id: 'f1', title: 'Deep Focus (Lofi)', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', category: 'Foco' },
+                { id: 'f2', title: 'Interstellar Calm', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', category: 'Espaço' }
+            ];
+        } finally {
+            if (btn) btn.innerHTML = originalText;
         }
         
-        this.tracks = data;
         this._el = this._build();
         document.body.appendChild(this._el);
         
         requestAnimationFrame(() => {
             this._el.style.opacity = '1';
             const modal = this._el.querySelector('.jukebox-modal');
-            if (modal) modal.style.transform = 'scale(1)';
+            if (modal) {
+                modal.style.transform = 'translateY(0) scale(1)';
+            }
         });
     }
 
