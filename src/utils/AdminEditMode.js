@@ -263,6 +263,13 @@ export class AdminEditMode {
             body.appendChild(sItem);
         });
 
+        const saveSectorsBtn = document.createElement('button');
+        saveSectorsBtn.innerHTML = '💾 Salvar Áreas e Lousa';
+        saveSectorsBtn.style.cssText = `
+            width:100%; padding:6px; background:#10b981; color:#fff;
+            border:none; border-radius:6px; font-family:monospace; font-size:10px;
+            cursor:pointer; margin:4px 0 16px; font-weight:700;
+        `;
         saveSectorsBtn.onclick = () => this.saveSectors();
         body.appendChild(saveSectorsBtn);
 
