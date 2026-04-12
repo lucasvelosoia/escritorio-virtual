@@ -88,6 +88,7 @@ export class GameScene extends Phaser.Scene {
             try { sectorsData = JSON.parse(localStorage.getItem('escritorio-sectors-bounds')); } catch(e) {}
         }
         if (sectorsData) {
+            console.log("Sincronizando setores com o Banco de Dados...");
             SECTORS.forEach(s => {
                 if (sectorsData[s.id]) {
                     s.tileX = sectorsData[s.id].tileX;
@@ -96,8 +97,10 @@ export class GameScene extends Phaser.Scene {
                     s.tileH = sectorsData[s.id].tileH;
                 }
             });
-            this._drawSectorZones();
         }
+        
+        console.log("Desenhando zonas do escritório...");
+        this._drawSectorZones();
         this.events.emit('employees-updated');
     }
 
