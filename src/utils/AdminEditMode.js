@@ -196,8 +196,22 @@ export class AdminEditMode {
         // ── NOVO: Gerenciamento de Setores ────────────────────────────
         const sectorHeader = document.createElement('div');
         sectorHeader.style.cssText = `font-size:8px; color:#10b981; margin:8px 0 8px; padding:0 4px; letter-spacing:1px; font-weight:700`;
-        sectorHeader.textContent = 'EDITAR SETORES';
+        sectorHeader.textContent = 'EDITAR ÁREAS E SETORES';
         body.appendChild(sectorHeader);
+
+        // ── ITEM DA LOUSA (WHITEBOARD) INTEGRADO ──
+        const wbItem = document.createElement('div');
+        wbItem.style.cssText = `padding:8px; border-radius:8px; background:#1e293b; margin-bottom:8px; border-left:3px solid #60a5fa;`;
+        wbItem.innerHTML = `
+            <div style="font-size:9px; color:#fff; font-weight:600; margin-bottom:4px">◈ Whiteboard</div>
+            <button id="draw-wb-btn" style="
+                width:100%; padding:4px; background:rgba(96, 165, 250, 0.05); color:#60a5fa;
+                border:1px solid #60a5fa; border-radius:4px; font-size:9px;
+                cursor:pointer; font-weight:700; transition: all .2s;
+            ">✏️ Redesenhar Lousa</button>
+        `;
+        wbItem.querySelector('#draw-wb-btn').onclick = () => this._startDrawingWhiteboard(wbItem.querySelector('#draw-wb-btn'));
+        body.appendChild(wbItem);
 
         SECTORS.forEach(s => {
             const hex = '#' + s.color.toString(16).padStart(6,'0');
@@ -252,24 +266,7 @@ export class AdminEditMode {
         saveSectorsBtn.onclick = () => this.saveSectors();
         body.appendChild(saveSectorsBtn);
 
-        // ── NOVO: Gerenciamento da Lousa (Whiteboard) ─────────────────
-        const wbHeader = document.createElement('div');
-        wbHeader.style.cssText = `font-size:8px; color:#60a5fa; margin:8px 0 8px; padding:0 4px; letter-spacing:1px; font-weight:700; border-top:1px solid #1e293b; padding-top:12px`;
-        wbHeader.textContent = 'ÁREA DA LOUSA (WHITEBOARD)';
-        body.appendChild(wbHeader);
-
-        const wbItem = document.createElement('div');
-        wbItem.style.cssText = `padding:8px; border-radius:8px; background:#1e293b; margin-bottom:16px; border-left:3px solid #60a5fa;`;
-        wbItem.innerHTML = `
-            <div style="font-size:9px; color:#fff; font-weight:600; margin-bottom:8px">Lousa de Reunião</div>
-            <button id="draw-wb-btn" style="
-                width:100%; padding:6px; background:rgba(96, 165, 250, 0.1); color:#60a5fa;
-                border:1px solid #60a5fa; border-radius:4px; font-size:9px;
-                cursor:pointer; font-weight:700; transition: all .2s;
-            ">✏️ Redesenhar Lousa</button>
-        `;
-        wbItem.querySelector('#draw-wb-btn').onclick = () => this._startDrawingWhiteboard(wbItem.querySelector('#draw-wb-btn'));
-        body.appendChild(wbItem);
+        // Removemos o bloco antigo da whiteboard que ficava solto
 
         // ── NOVO: Gerenciamento de Funcionários (Bonecos) ───────────
         const empHeader = document.createElement('div');
@@ -572,24 +569,28 @@ export class AdminEditMode {
 
         this._onDrawDown = (pointer) => {
             if (pointer.event.target.closest('#asset-panel')) return;
-            this._startPoint = { x: pointer.worldX, y: pointer.worldY };
+            const tx = Math.floor(pointer.worldX / SNAP);
+            const ty = Math.floor(pointer.worldY / SNAP);
+            this._startPoint = { tx, ty };
         };
 
         this._onDrawMove = (pointer) => {
             if (!this._startPoint) return;
-            const x1 = Math.min(this._startPoint.x, pointer.worldX);
-            const y1 = Math.min(this._startPoint.y, pointer.worldY);
-            const x2 = Math.max(this._startPoint.x, pointer.worldX);
-            const y2 = Math.max(this._startPoint.y, pointer.worldY);
+            const tx = Math.floor(pointer.worldX / SNAP);
+            const ty = Math.floor(pointer.worldY / SNAP);
             
-            const w = x2 - x1;
-            const h = y2 - y1;
+            const x1 = Math.min(this._startPoint.tx, tx);
+            const y1 = Math.min(this._startPoint.ty, ty);
+            const x2 = Math.max(this._startPoint.tx, tx);
+            const y2 = Math.max(this._startPoint.ty, ty);
+            
+            const tw = (x2 - x1) + 1;
+            const th = (y2 - y1) + 1;
 
             if (this.scene.whiteboardArea) {
-                this.scene.whiteboardArea.setPosition(x1 + w/2, y1 + h/2);
-                this.scene.whiteboardArea.setSize(w, h);
-                // Atualiza o texto visual se houver
-                if (this.scene.whiteboardText) this.scene.whiteboardText.setPosition(x1 + w/2, y1 + h/2);
+                this.scene.whiteboardArea.setPosition(x1 * SNAP + (tw * SNAP)/2, y1 * SNAP + (th * SNAP)/2);
+                this.scene.whiteboardArea.setSize(tw * SNAP, th * SNAP);
+                if (this.scene.whiteboardText) this.scene.whiteboardText.setPosition(this.scene.whiteboardArea.x, this.scene.whiteboardArea.y);
             }
         };
 
@@ -597,7 +598,7 @@ export class AdminEditMode {
             if (this._startPoint) {
                 this._cancelDrawing();
                 this._toast('Lousa definida ✓');
-                this.saveSectors(); // Reaproveita o save de setores p/ incluir a lousa
+                this.saveSectors();
             }
         };
 

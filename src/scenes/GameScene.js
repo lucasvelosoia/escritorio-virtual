@@ -642,14 +642,15 @@ export class GameScene extends Phaser.Scene {
         const w = data ? data.w : 120;
         const h = data ? data.h : 40;
 
-        this.whiteboardArea = this.add.rectangle(x, y, w, h, 0xffffff)
+        this.whiteboardArea = this.add.rectangle(x, y, w, h, 0x60a5fa, 0.05)
             .setOrigin(0.5, 0.5)
-            .setDepth(5)
-            .setStrokeStyle(3, 0x1e293b);
+            .setDepth(2) // Mesma profundidade dos setores
+            .setStrokeStyle(2, 0x60a5fa, 0.4);
         
-        this.whiteboardText = this.add.text(x, y, 'WHITEBOARD', {
-            fontSize: '10px', color: '#1e293b', fontWeight: '800'
-        }).setOrigin(0.5, 0.5).setDepth(6);
+        this.whiteboardText = this.add.text(x, y, '◈ WHITEBOARD ◈', {
+            fontSize: '8px', color: '#60a5fa', fontWeight: '800',
+            fontFamily: 'Outfit, monospace', backgroundColor: '#00000088', padding: { x: 6, y: 3 }
+        }).setOrigin(0.5, 0.5).setDepth(21);
 
         this.whiteboardArea.setInteractive({ useHandCursor: true });
         this.whiteboardArea.on('pointerdown', () => {
