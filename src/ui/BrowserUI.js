@@ -12,17 +12,22 @@ export class BrowserUI {
         this._el = this._build();
         document.body.appendChild(this._el);
         
-        // Bloquear teclado do jogo e liberar teclas capturadas (WASD)
-        if (this.scene.input && this.scene.input.keyboard) {
-            this.scene.input.keyboard.enabled = false;
-            // Limpa qualquer tecla que o Phaser esteja "segurando" ou bloqueando (fundamental para WASD)
-            this.scene.input.keyboard.removeAllKeys();
+        // DESCONEXÃO TOTAL: Desliga o cérebro de entrada do jogo para liberar o teclado
+        if (this.scene.input) {
+            this.scene.input.enabled = false;
+            if (this.scene.input.keyboard) {
+                this.scene.input.keyboard.removeAllKeys();
+            }
         }
 
         requestAnimationFrame(() => {
             this._el.style.opacity = '1';
             const modal = this._el.querySelector('.browser-window');
             if (modal) modal.style.transform = 'translateY(0) scale(1)';
+            
+            // FOCO AUTOMÁTICO: Coloca o cursor na barra de endereço na hora
+            const urlInput = this._el.querySelector('#br-url-input');
+            if (urlInput) urlInput.focus();
         });
     }
 
@@ -36,16 +41,18 @@ export class BrowserUI {
         setTimeout(() => {
             this._el?.remove();
             this._el = null;
-            // Reativar teclado do jogo
-            if (this.scene.input && this.scene.input.keyboard) {
-                this.scene.input.keyboard.enabled = true;
-                // RECRIAR TECLAS: Garante que o personagem volte a andar
-                if (typeof this.scene._setupInputs === 'function') {
-                    this.scene._setupInputs();
-                } else {
-                    // Fallback de emergência se o método não existir
-                    this.scene.cursors = this.scene.input.keyboard.createCursorKeys();
-                    this.scene.keys = this.scene.input.keyboard.addKeys('W,A,S,D');
+            // RECONEXÃO TOTAL: Devolve o controle para o jogo
+            if (this.scene.input) {
+                this.scene.input.enabled = true;
+                if (this.scene.input.keyboard) {
+                    this.scene.input.keyboard.enabled = true;
+                    // RECRIAR TECLAS: Garante que o personagem volte a andar
+                    if (typeof this.scene._setupInputs === 'function') {
+                        this.scene._setupInputs();
+                    } else {
+                        this.scene.cursors = this.scene.input.keyboard.createCursorKeys();
+                        this.scene.wasdKeys = this.scene.input.keyboard.addKeys('W,A,S,D,E');
+                    }
                 }
             }
         }, 400);
