@@ -323,6 +323,16 @@ export class MultiplayerService {
         return data?.data;
     }
 
+    async getWhiteboard() {
+        const { data } = await this.supabase.from('office_config').select('value').eq('key', 'whiteboard_bounds').single();
+        return data ? data.value : null;
+    }
+
+    async saveWhiteboard(bounds) {
+        if (!this.active) return;
+        await this.supabase.from('office_config').upsert({ key: 'whiteboard_bounds', value: bounds });
+    }
+
     async saveSectors(sectData) {
         if (!this.active) return;
         const { error } = await this.supabase.from('office_layout').upsert({

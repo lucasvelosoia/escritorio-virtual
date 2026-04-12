@@ -249,15 +249,27 @@ export class AdminEditMode {
             body.appendChild(sItem);
         });
 
-        const saveSectorsBtn = document.createElement('button');
-        saveSectorsBtn.innerHTML = '💾 Salvar Setores';
-        saveSectorsBtn.style.cssText = `
-            width:100%; padding:6px; background:#10b981; color:#fff;
-            border:none; border-radius:6px; font-family:monospace; font-size:10px;
-            cursor:pointer; margin:4px 0 16px; font-weight:700;
-        `;
         saveSectorsBtn.onclick = () => this.saveSectors();
         body.appendChild(saveSectorsBtn);
+
+        // ── NOVO: Gerenciamento da Lousa (Whiteboard) ─────────────────
+        const wbHeader = document.createElement('div');
+        wbHeader.style.cssText = `font-size:8px; color:#60a5fa; margin:8px 0 8px; padding:0 4px; letter-spacing:1px; font-weight:700; border-top:1px solid #1e293b; padding-top:12px`;
+        wbHeader.textContent = 'ÁREA DA LOUSA (WHITEBOARD)';
+        body.appendChild(wbHeader);
+
+        const wbItem = document.createElement('div');
+        wbItem.style.cssText = `padding:8px; border-radius:8px; background:#1e293b; margin-bottom:16px; border-left:3px solid #60a5fa;`;
+        wbItem.innerHTML = `
+            <div style="font-size:9px; color:#fff; font-weight:600; margin-bottom:8px">Lousa de Reunião</div>
+            <button id="draw-wb-btn" style="
+                width:100%; padding:6px; background:rgba(96, 165, 250, 0.1); color:#60a5fa;
+                border:1px solid #60a5fa; border-radius:4px; font-size:9px;
+                cursor:pointer; font-weight:700; transition: all .2s;
+            ">✏️ Redesenhar Lousa</button>
+        `;
+        wbItem.querySelector('#draw-wb-btn').onclick = () => this._startDrawingWhiteboard(wbItem.querySelector('#draw-wb-btn'));
+        body.appendChild(wbItem);
 
         // ── NOVO: Gerenciamento de Funcionários (Bonecos) ───────────
         const empHeader = document.createElement('div');
@@ -551,6 +563,49 @@ export class AdminEditMode {
         this.scene.input.on('pointerup',   this._onDrawUp);
     }
 
+    // ── Modo "desenhar lousa" ─────────────────────────────────────────
+    _startDrawingWhiteboard(btn) {
+        this._cancelAdd();
+        btn.style.background = '#60a5fa';
+        btn.style.color      = '#fff';
+        this._toast('Clique e arraste p/ desenhar a LOUSA');
+
+        this._onDrawDown = (pointer) => {
+            if (pointer.event.target.closest('#asset-panel')) return;
+            this._startPoint = { x: pointer.worldX, y: pointer.worldY };
+        };
+
+        this._onDrawMove = (pointer) => {
+            if (!this._startPoint) return;
+            const x1 = Math.min(this._startPoint.x, pointer.worldX);
+            const y1 = Math.min(this._startPoint.y, pointer.worldY);
+            const x2 = Math.max(this._startPoint.x, pointer.worldX);
+            const y2 = Math.max(this._startPoint.y, pointer.worldY);
+            
+            const w = x2 - x1;
+            const h = y2 - y1;
+
+            if (this.scene.whiteboardArea) {
+                this.scene.whiteboardArea.setPosition(x1 + w/2, y1 + h/2);
+                this.scene.whiteboardArea.setSize(w, h);
+                // Atualiza o texto visual se houver
+                if (this.scene.whiteboardText) this.scene.whiteboardText.setPosition(x1 + w/2, y1 + h/2);
+            }
+        };
+
+        this._onDrawUp = () => {
+            if (this._startPoint) {
+                this._cancelDrawing();
+                this._toast('Lousa definida ✓');
+                this.saveSectors(); // Reaproveita o save de setores p/ incluir a lousa
+            }
+        };
+
+        this.scene.input.on('pointerdown', this._onDrawDown);
+        this.scene.input.on('pointermove', this._onDrawMove);
+        this.scene.input.on('pointerup',   this._onDrawUp);
+    }
+
     _cancelDrawing() {
         this._drawingSectorId = null;
         this._startPoint      = null;
@@ -746,8 +801,22 @@ export class AdminEditMode {
         if (this.scene.multiplayer && this.scene.multiplayer.active) {
             this.scene.multiplayer.saveSectors(bounds);
         }
+
+        // NOVO: Salva os limites da Lousa também
+        if (this.scene.whiteboardArea) {
+            const wbData = {
+                x: this.scene.whiteboardArea.x,
+                y: this.scene.whiteboardArea.y,
+                w: this.scene.whiteboardArea.width,
+                h: this.scene.whiteboardArea.height
+            };
+            localStorage.setItem('escritorio-whiteboard-bounds', JSON.stringify(wbData));
+            if (this.scene.multiplayer && this.scene.multiplayer.active) {
+                this.scene.multiplayer.saveWhiteboard(wbData);
+            }
+        }
         
-        this._toast('Setores sincronizados ✓');
+        this._toast('Configurações sincronizadas ✓');
     }
 
     loadLocal() {

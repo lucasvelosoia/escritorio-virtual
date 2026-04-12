@@ -56,15 +56,14 @@ export class GameScene extends Phaser.Scene {
         this._lastUpdate = 0;
     }
 
-    async _loadInitialData() {
-        let layout = null;
-        let employees = null;
         let sectorsData = null;
+        let whiteboardData = null;
         
         if (this.multiplayer.active) {
             layout = await this.multiplayer.getLayout();
             employees = await this.multiplayer.getEmployees();
             sectorsData = await this.multiplayer.getSectors();
+            whiteboardData = await this.multiplayer.getWhiteboard();
         }
         
         if (!layout || (Array.isArray(layout) && layout.length === 0)) {
@@ -78,8 +77,12 @@ export class GameScene extends Phaser.Scene {
             this._decorateDesenvolvimento();
             this._decorateRH(); 
             this._decorateReuniao();
-            this._createWhiteboard();
         }
+
+        if (!whiteboardData) {
+            try { whiteboardData = JSON.parse(localStorage.getItem('escritorio-whiteboard-bounds')); } catch(e) {}
+        }
+        this._createWhiteboard(whiteboardData);
 
         if (employees && employees.length > 0) {
             EMPLOYEES.length = 0; 
@@ -632,20 +635,26 @@ export class GameScene extends Phaser.Scene {
         if (leaveBtn) leaveBtn.onclick = () => { this.player.setPosition(22 * 32, 7 * 32); this._closeMeeting(); };
     }
 
-    _createWhiteboard() {
-        // Criamos uma lousa visual na parede da sala de reunião (Setor Reunião)
-        // Posição: Parede Norte da sala de reunião (aproximadamente x=25T, y=4T)
-        this.whiteboardArea = this.add.rectangle(25 * 32, 4.2 * 32, 120, 40, 0xffffff)
+    _createWhiteboard(data) {
+        // Se houver dados, usamos. Se não, usamos o padrão na sala de reunião.
+        const x = data ? data.x : 25 * 32;
+        const y = data ? data.y : 4.2 * 32;
+        const w = data ? data.w : 120;
+        const h = data ? data.h : 40;
+
+        this.whiteboardArea = this.add.rectangle(x, y, w, h, 0xffffff)
             .setOrigin(0.5, 0.5)
             .setDepth(5)
             .setStrokeStyle(3, 0x1e293b);
         
-        this.add.text(25 * 32, 4.2 * 32, 'WHITEBOARD', {
+        this.whiteboardText = this.add.text(x, y, 'WHITEBOARD', {
             fontSize: '10px', color: '#1e293b', fontWeight: '800'
         }).setOrigin(0.5, 0.5).setDepth(6);
 
         this.whiteboardArea.setInteractive({ useHandCursor: true });
-        this.whiteboardArea.on('pointerdown', () => this.whiteboardUI.open());
+        this.whiteboardArea.on('pointerdown', () => {
+             if (!this.admin.active) this.whiteboardUI.open();
+        });
     }
 
     _closeMeeting() {
