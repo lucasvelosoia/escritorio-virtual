@@ -599,11 +599,6 @@ export class AdminEditMode {
         this.scene.input.on('pointerup',   this._onDrawUp);
     }
 
-    // ── Modo "desenhar lousa" ─────────────────────────────────────────
-        this.scene.input.on('pointerdown', this._onDrawDown);
-        this.scene.input.on('pointermove', this._onDrawMove);
-        this.scene.input.on('pointerup',   this._onDrawUp);
-    }
 
     _cancelDrawing() {
         this._drawingSectorId = null;

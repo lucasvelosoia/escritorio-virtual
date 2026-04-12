@@ -49,7 +49,6 @@ import { BrowserUI } from '../ui/BrowserUI.js';
 import { WorkstationMenu } from '../ui/WorkstationMenu.js';
 import { WhiteboardUI } from '../ui/WhiteboardUI.js';
 
-const T = 32;
 
 // Itens que NÃO bloqueiam passagem (decorativos finos)
 const NO_COLLIDE = new Set([
@@ -96,6 +95,9 @@ export class GameScene extends Phaser.Scene {
         this._lastUpdate = 0;
     }
 
+    async _loadInitialData() {
+        let layout = null;
+        let employees = null;
         let sectorsData = null;
         let whiteboardData = null;
         
