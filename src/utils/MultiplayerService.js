@@ -19,6 +19,7 @@ export class MultiplayerService {
             }
         });
 
+        console.log('MultiplayerService v3.1.2 - Sincronizado');
         this._init();
         this.fetchChatHistory();
     }
