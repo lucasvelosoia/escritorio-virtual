@@ -25,6 +25,21 @@ function createWindow() {
     // Abre o console automaticamente para vermos erros
     win.webContents.openDevTools();
 
+    // --- CADEADO DE NAVEGAÇÃO ---
+    // Impede que sites externos "sequestrem" a janela principal do jogo
+    win.webContents.on('will-navigate', (event, url) => {
+        if (!url.startsWith('http://localhost:5173')) {
+            console.log('[Electron] Bloqueando navegação externa da janela principal:', url);
+            event.preventDefault();
+        }
+    });
+
+    // Redireciona popups para o navegador interno (opcional) ou impede abertura
+    win.webContents.setWindowOpenHandler(({ url }) => {
+        console.log('[Electron] Tentativa de popup bloqueada/redirecionada:', url);
+        return { action: 'deny' };
+    });
+
     // --- O PULO DO GATO (Nível Master) ---
     // Removemos TODOS os bloqueios de segurança que impedem sites (como Google/YouTube) de abrirem
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
