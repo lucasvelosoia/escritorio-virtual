@@ -127,11 +127,15 @@ export class BrowserUI {
             webElement.setAttribute('allowpopups', '');
             webElement.setAttribute('useragent', chromeUserAgent);
             webElement.setAttribute('nodeintegration', 'no');
+            webElement.setAttribute('plugins', 'true');
+            // 'encrypted-media' é VITAL para o YouTube rodar
+            webElement.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+            webElement.setAttribute('allowfullscreen', 'true');
             // Permissões extras para garantir carregamento de scripts e CSS de terceiros
-            webElement.setAttribute('webpreferences', 'autoplayPolicy=no-user-gesture-required, nativeWindowOpen=yes, allowRunningInsecureContent=yes, javascript=yes');
+            webElement.setAttribute('webpreferences', 'autoplayPolicy=no-user-gesture-required, nativeWindowOpen=yes, allowRunningInsecureContent=yes, javascript=yes, spellcheck=yes');
             webElement.style.cssText = `width:100%; height:100%; background:#fff; position:relative; z-index:1;`;
         } else {
-            webElement.setAttribute('allow', 'autoplay; microphone; camera; display-capture; fullscreen');
+            webElement.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
             webElement.style.cssText = `width:100%; height:100%; border:none; background:#fff; position:relative; z-index:1;`;
         }
         
