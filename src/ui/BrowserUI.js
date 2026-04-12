@@ -84,17 +84,37 @@ export class BrowserUI {
                 " />
             </div>
 
-            <button id="br-refresh" style="background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:18px">↻</button>
+            <div style="display:flex; gap:10px">
+                <button id="br-refresh" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#94a3b8; cursor:pointer; font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center;">↻</button>
+                <button id="br-external" style="background:rgba(139, 92, 246, 0.2); border:1px solid rgba(139, 92, 246, 0.4); border-radius:6px; color:#c4b5fd; cursor:pointer; font-size:14px; padding:0 12px; height:32px; font-weight:700">ABRIR FORA</button>
+            </div>
         `;
 
         // Container do Iframe
         const content = document.createElement('div');
-        content.style.cssText = `flex-grow:1; background:#fff; position:relative;`;
+        content.style.cssText = `flex-grow:1; background:#0f172a; position:relative; overflow:hidden;`;
+        
+        // Mensagem de Fundo (visível se o iframe estiver transparente ou bloquear)
+        const bgMsg = document.createElement('div');
+        bgMsg.style.cssText = `
+            position:absolute; inset:0; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; text-align:center;
+            color:#475569; padding:40px; z-index:0;
+        `;
+        bgMsg.innerHTML = `
+            <div style="font-size:40px; margin-bottom:15px">🌐</div>
+            <div style="font-size:16px; font-weight:700; color:#94a3b8; margin-bottom:8px">Site com Proteção de Exibição</div>
+            <p style="font-size:14px; max-width:400px; line-height:1.6">
+                Alguns sites (Google, YouTube, etc) não permitem ser exibidos dentro de outras aplicações por segurança.<br><br>
+                Use o botão <strong style="color:#c4b5fd">ABRIR FORA</strong> no topo para acessar a versão completa.
+            </p>
+        `;
+        content.appendChild(bgMsg);
         
         const iframe = document.createElement('iframe');
         iframe.id = 'br-iframe';
         iframe.src = this.currentUrl;
-        iframe.style.cssText = `width:100%; height:100%; border:none; background:#fff;`;
+        iframe.style.cssText = `width:100%; height:100%; border:none; background:#fff; position:relative; z-index:1;`;
         
         content.appendChild(iframe);
         window.appendChild(header);
@@ -117,6 +137,11 @@ export class BrowserUI {
         const refreshBtn = header.querySelector('#br-refresh');
         refreshBtn.onclick = () => {
             iframe.src = iframe.src;
+        };
+
+        const externalBtn = header.querySelector('#br-external');
+        externalBtn.onclick = () => {
+            window.open(iframe.src, '_blank');
         };
 
         // Fechar ao clicar no fundo
