@@ -90,7 +90,7 @@ export class BrowserUI {
             </div>
         `;
 
-        // Container do Iframe
+        // Container do Iframe / WebView
         const content = document.createElement('div');
         content.style.cssText = `flex-grow:1; background:#0f172a; position:relative; overflow:hidden;`;
         
@@ -103,20 +103,32 @@ export class BrowserUI {
         `;
         bgMsg.innerHTML = `
             <div style="font-size:40px; margin-bottom:15px">🌐</div>
-            <div style="font-size:16px; font-weight:700; color:#94a3b8; margin-bottom:8px">Site com Proteção de Exibição</div>
+            <div style="font-size:16px; font-weight:700; color:#94a3b8; margin-bottom:8px">Conexão Blindada</div>
             <p style="font-size:14px; max-width:400px; line-height:1.6">
-                Alguns sites (Google, YouTube, etc) não permitem ser exibidos dentro de outras aplicações por segurança.<br><br>
-                Use o botão <strong style="color:#c4b5fd">ABRIR FORA</strong> no topo para acessar a versão completa.
+                No App de Desktop, você tem acesso total. Se o site não carregar, use o botão de atualizar.<br><br>
+                <strong style="color:#c4b5fd">Modo App Ativado</strong>
             </p>
         `;
         content.appendChild(bgMsg);
         
-        const iframe = document.createElement('iframe');
-        iframe.id = 'br-iframe';
-        iframe.src = this.currentUrl;
-        iframe.style.cssText = `width:100%; height:100%; border:none; background:#fff; position:relative; z-index:1;`;
+        // Verificamos se estamos no Electron
+        const isElectron = navigator.userAgent.toLowerCase().includes(' electron');
+        const browserTag = isElectron ? 'webview' : 'iframe';
         
-        content.appendChild(iframe);
+        const webElement = document.createElement(browserTag);
+        webElement.id = 'br-iframe';
+        webElement.src = this.currentUrl;
+        
+        // Atributos específicos do Electron para pular bloqueios
+        if (isElectron) {
+            webElement.setAttribute('allowpopups', '');
+            webElement.setAttribute('nodeintegration', 'no');
+            webElement.style.cssText = `width:100%; height:100%; background:#fff; position:relative; z-index:1;`;
+        } else {
+            webElement.style.cssText = `width:100%; height:100%; border:none; background:#fff; position:relative; z-index:1;`;
+        }
+        
+        content.appendChild(webElement);
         window.appendChild(header);
         window.appendChild(content);
         overlay.appendChild(window);

@@ -199,18 +199,20 @@ export class GameScene extends Phaser.Scene {
             if (this.taskManager.isOpen()) { this.taskManager.close(); return; }
             if (this.nearComputer) {
                 const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
-                this.workstationMenu.open(
-                    sector,
-                    () => this.browserUI.open(),
-                    () => sector ? this.taskManager.open(sector) : null
-                );
-                return;
+                if (sector && sector.id !== 'reuniao') {
+                    this.workstationMenu.open(
+                        sector,
+                        () => this.browserUI.open(),
+                        () => this.taskManager.open(sector)
+                    );
+                    return;
+                }
             }
             if (this.nearJukebox) {
                 this.jukeboxUI.open();
                 return;
             }
-            if (this.activeSector) {
+            if (this.activeSector && this.activeSector.id !== 'reuniao') {
                 this.workstationMenu.open(
                     this.activeSector,
                     () => this.browserUI.open(),
@@ -345,7 +347,7 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        if (sector) {
+        if (sector && sector.id !== 'reuniao') {
             this.workstationMenu.open(
                 sector,
                 () => this.browserUI.open(),
@@ -415,7 +417,7 @@ export class GameScene extends Phaser.Scene {
             const zone = this.add.rectangle(s.pixelX, s.pixelY, s.pixelW, s.pixelH, hex, 0.03).setOrigin(0, 0).setDepth(2).setStrokeStyle(1, hex, 0.15);
             zone.setInteractive({ useHandCursor: true });
             zone.on('pointerdown', () => { 
-                if (!this.admin.active && !this.taskManager.isOpen()) {
+                if (!this.admin.active && !this.taskManager.isOpen() && s.id !== 'reuniao') {
                     this.workstationMenu.open(
                         s,
                         () => this.browserUI.open(),
