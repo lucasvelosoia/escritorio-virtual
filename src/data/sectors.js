@@ -4,6 +4,11 @@ const SAVED_BOUNDS = JSON.parse(localStorage.getItem('escritorio-sectors-bounds'
 
 export const SECTORS = [
     {
+        id: 'whiteboard', label: '◈ LOUSA COOPERATIVA ◈', color: 0xfacc15,
+        tileX: 14, tileY: 1, tileW: 4, tileH: 2,
+        tasks: [], files: [], projects: []
+    },
+    {
         id: 'marketing', label: 'MARKETING', color: 0xec4899,
         tileX: 1, tileY: 3, tileW: 6, tileH: 10,
         files: [
@@ -74,11 +79,6 @@ export const SECTORS = [
             { id: 't4', title: 'Onboarding novo dev',        status: 'todo',  priority: 'média', assignee: '' },
         ],
     },
-    {
-        id: 'whiteboard', label: 'WHITEBOARD', color: 0x60a5fa,
-        tileX: 23, tileY: 1, tileW: 7, tileH: 2,
-        tasks: [], files: [], projects: []
-    }
 ];
 
 // Aplica bounds salvos
