@@ -211,7 +211,7 @@ export class JukeboxUI {
         vol.oninput = (e) => {
             this.volume = parseFloat(e.target.value);
             localStorage.setItem('jukebox-volume', this.volume);
-            if (this.currentSound) this.currentSound.setVolume(this.volume);
+            if (this.audioSource) this.audioSource.volume = this.volume;
             el.querySelector('span[style*="a78bfa"]').innerText = `${Math.round(this.volume * 100)}%`;
         };
 
@@ -222,35 +222,48 @@ export class JukeboxUI {
     }
 
     playTrack(track) {
-        console.log('Playing track:', track.title);
-        this.stop();
-        this.currentTrackId = track.id;
+        console.log('Jukebox: Tentando tocar:', track.title);
         
-        // Se já carregamos este som antes, apenas tocamos
-        if (this.scene.cache.audio.exists(track.id)) {
-            this._startSound(track.id);
+        // Se já houver um áudio tocando, paramos e limpamos
+        if (this.audioSource) {
+            this.audioSource.pause();
+            this.audioSource.src = "";
+            this.audioSource = null;
+        }
+
+        // Se clicou na mesma que já estava tocando (para parar), apenas resetamos
+        if (this.currentTrackId === track.id) {
+            this.currentTrackId = null;
             this._refresh();
             return;
         }
 
-        // Caso contrário, carregamos dinamicamente
-        this.scene.load.audio(track.id, track.url);
-        this.scene.load.once('complete', () => {
-            this._startSound(track.id);
+        this.currentTrackId = track.id;
+        
+        try {
+            // Criando áudio nativo do navegador
+            this.audioSource = new Audio(track.url);
+            this.audioSource.loop = true;
+            this.audioSource.volume = this.volume;
+            
+            this.audioSource.play().then(() => {
+                console.log('Jukebox: Reprodução iniciada com sucesso.');
+            }).catch(err => {
+                console.error('Jukebox: Erro ao tocar áudio:', err);
+                alert("Erro ao tocar música. Verifique sua conexão ou tente outra faixa.");
+            });
+            
             this._refresh();
-        });
-        this.scene.load.start();
-    }
-
-    _startSound(key) {
-        this.currentSound = this.scene.sound.add(key, { loop: true, volume: this.volume });
-        this.currentSound.play();
+        } catch (e) {
+            console.error('Jukebox: Falha ao carregar objeto de áudio:', e);
+        }
     }
 
     stop() {
-        if (this.currentSound) {
-            this.currentSound.stop();
-            this.currentSound = null;
+        if (this.audioSource) {
+            this.audioSource.pause();
+            this.audioSource.src = "";
+            this.audioSource = null;
         }
         this.currentTrackId = null;
         this._refresh();
@@ -258,11 +271,45 @@ export class JukeboxUI {
 
     _refresh() {
         if (!this._el) return;
-        const newEl = this._build();
-        newEl.style.opacity = '1';
-        const newModal = newEl.querySelector('.jukebox-modal');
-        newModal.style.transform = 'translateY(0) scale(1)';
-        this._el.replaceWith(newEl);
-        this._el = newEl;
+        
+        // Em vez de recriar tudo, vamos apenas atualizar os itens e o volume
+        const container = this._el.querySelector('div[style*="max-height"]');
+        if (container) {
+            container.innerHTML = this.tracks.map(t => {
+                const isActive = this.currentTrackId === t.id;
+                return `
+                    <div class="track-item ${isActive ? 'active' : ''}" data-id="${t.id}" style="
+                        padding: 16px 20px; border-radius: 18px;
+                        background: ${isActive ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255,255,255,0.03)'};
+                        border: 1px solid ${isActive ? 'rgba(139, 92, 246, 0.3)' : 'rgba(255,255,255,0.05)'};
+                        margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; gap: 16px;
+                        transition: all .25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+                    ">
+                        <div style="
+                            width: 40px; height: 40px; border-radius: 12px;
+                            background: ${isActive ? 'var(--primary, #8b5cf6)' : 'rgba(255,255,255,0.1)'};
+                            display: flex; align-items: center; justify-content: center; font-size: 18px;
+                            box-shadow: ${isActive ? '0 0 20px rgba(139, 92, 246, 0.4)' : 'none'};
+                        ">
+                            ${isActive ? '🎵' : '📻'}
+                        </div>
+                        <div style="flex-grow: 1">
+                            <div style="font-weight: 700; font-size: 15px; color: ${isActive ? '#fff' : '#cbd5e1'}">${t.title}</div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 2px">${t.category || 'Ambient'}</div>
+                        </div>
+                        ${isActive ? '<div class="playing-bars"><span></span><span></span><span></span></div>' : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Re-bind dos cliques após atualizar o HTML
+            container.querySelectorAll('.track-item').forEach(item => {
+                item.onclick = () => {
+                    const trackId = item.dataset.id;
+                    const track = this.tracks.find(t => t.id === trackId);
+                    if (track) this.playTrack(track);
+                };
+            });
+        }
     }
 }

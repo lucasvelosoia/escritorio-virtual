@@ -97,7 +97,52 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
+        console.log('GameScene: Iniciando criação...');
         this.multiplayer = new MultiplayerService(this);
+
+        // --- REFERÊNCIAS DA HUD ---
+        const jukeboxBtn = document.getElementById('btn-jukebox');
+        const chatBtn    = document.getElementById('btn-chat');
+        const chatPanel  = document.getElementById('chat-panel');
+        const chatInput  = document.getElementById('chat-input');
+        const tasksBtn   = document.getElementById('btn-tasks');
+        const custBtn    = document.getElementById('btn-customize');
+        const logoutBtn  = document.getElementById('btn-logout');
+
+        // --- ATIVAÇÃO DE BOTÕES DA HUD (Prioridade Alta) ---
+        try {
+            if (jukeboxBtn) jukeboxBtn.onclick = () => this.jukeboxUI.open();
+            if (chatBtn && chatInput) {
+                chatBtn.onclick = () => {
+                    if (chatPanel?.classList.contains('focused')) chatInput.blur();
+                    else { chatPanel?.classList.add('focused'); chatInput.focus(); }
+                };
+            }
+            if (tasksBtn) tasksBtn.onclick = () => document.getElementById('task-board')?.classList.toggle('open');
+            if (custBtn)  custBtn.onclick  = () => this.avatarCustomizer.open();
+            if (logoutBtn) logoutBtn.onclick = () => { localStorage.clear(); window.location.reload(); };
+
+            // Atalhos de teclado para o Chat
+            if (chatInput) {
+                this.input.keyboard.on('keydown-T', (e) => {
+                    if (document.activeElement !== chatInput) {
+                        e.preventDefault();
+                        chatPanel?.classList.add('focused');
+                        setTimeout(() => chatInput.focus(), 10);
+                    }
+                });
+                this.input.keyboard.on('keydown-ENTER', (e) => {
+                    if (document.activeElement !== chatInput) {
+                        e.preventDefault();
+                        chatPanel?.classList.add('focused');
+                        setTimeout(() => chatInput.focus(), 10);
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Erro ao inicializar botões da HUD:', e);
+        }
+
         const map = this.make.tilemap({ key: 'office-map' });
         const ts5  = map.addTilesetImage('tileset5_export',        'tileset5_export');
         const ts6  = map.addTilesetImage('tileset6_export',        'tileset6_export');
@@ -172,60 +217,14 @@ export class GameScene extends Phaser.Scene {
             }
         });
 
-        const chatBtn = document.getElementById('btn-chat');
-        const chatPanel = document.getElementById('chat-panel');
-        const chatInput = document.getElementById('chat-input');
-
-        if (chatBtn && chatPanel && chatInput) {
-            chatBtn.onclick = () => {
-                if (chatPanel.classList.contains('focused')) {
-                    chatInput.blur();
-                } else {
-                    chatPanel.classList.add('focused');
-                    chatInput.focus();
-                }
-            };
-            this.input.keyboard.on('keydown-T', (e) => {
-                if (document.activeElement !== chatInput) {
-                    e.preventDefault();
-                    chatPanel.classList.add('focused');
-                    setTimeout(() => chatInput.focus(), 10);
-                }
-            });
-            this.input.keyboard.on('keydown-ENTER', (e) => {
-                if (document.activeElement !== chatInput) {
-                    e.preventDefault();
-                    chatPanel.classList.add('focused');
-                    setTimeout(() => chatInput.focus(), 10);
-                }
-            });
-        }
-
-        const tasksBtn = document.getElementById('btn-tasks');
-        if (tasksBtn) {
-            tasksBtn.onclick = () => {
-                const panel = document.getElementById('task-board');
-                panel?.classList.toggle('open');
-            };
-        }
-        
-        const customizeBtn = document.getElementById('btn-customize');
-        if (customizeBtn) {
-            customizeBtn.onclick = () => this.avatarCustomizer.open();
-        }
-
-        const jukeboxBtn = document.getElementById('btn-jukebox');
-        if (jukeboxBtn) {
-            jukeboxBtn.onclick = () => this.jukeboxUI.open();
-        }
-
+        // Configurações adicionais do Chat (Focus/Blur/Send)
         if (chatInput) {
             chatInput.addEventListener('focus', () => {
-                if (this.input && this.input.keyboard) this.input.keyboard.enabled = false;
+                if (this.input?.keyboard) this.input.keyboard.enabled = false;
             });
             chatInput.addEventListener('blur', () => {
-                if (this.input && this.input.keyboard) this.input.keyboard.enabled = true;
-                document.getElementById('chat-panel')?.classList.remove('focused');
+                if (this.input?.keyboard) this.input.keyboard.enabled = true;
+                chatPanel?.classList.remove('focused');
             });
             chatInput.onkeydown = (e) => {
                 e.stopPropagation(); 
