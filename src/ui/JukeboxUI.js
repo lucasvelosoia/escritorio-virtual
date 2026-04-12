@@ -13,13 +13,28 @@ export class JukeboxUI {
     async open() {
         if (this._el) return;
         
-        console.log('Abrindo Jukebox...');
-        const btn = document.getElementById('btn-jukebox');
-        const originalText = btn ? btn.innerHTML : '';
-        if (btn) btn.innerHTML = '<span class="btn-icon">⏳</span> Carregando...';
+        console.log('Jukebox: Iniciando abertura...');
+        
+        // Criamos o elemento da UI IMEDIATAMENTE para dar feedback ao usuário
+        this._el = this._build();
+        document.body.appendChild(this._el);
+        
+        // Animação de entrada
+        requestAnimationFrame(() => {
+            if (this._el) {
+                this._el.style.opacity = '1';
+                const modal = this._el.querySelector('.jukebox-modal');
+                if (modal) modal.style.transform = 'translateY(0) scale(1)';
+            }
+        });
 
+        // Agora buscamos os dados em segundo plano
+        this._loadTracks();
+    }
+
+    async _loadTracks() {
         try {
-            // Carrega faixas do Supabase
+            console.log('Jukebox: Buscando faixas no Supabase...');
             const { data, error } = await supabase
                 .from('jukebox_tracks')
                 .select('*')
@@ -27,27 +42,16 @@ export class JukeboxUI {
             
             if (error) throw error;
             this.tracks = data || [];
+            console.log(`Jukebox: ${this.tracks.length} faixas carregadas.`);
         } catch (err) {
-            console.error('Erro ao carregar jukebox, usando fallbacks:', err);
-            // Fallbacks de segurança se o banco falhar
+            console.error('Jukebox: Erro no fetch, usando fallbacks:', err);
             this.tracks = [
                 { id: 'f1', title: 'Deep Focus (Lofi)', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', category: 'Foco' },
                 { id: 'f2', title: 'Interstellar Calm', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', category: 'Espaço' }
             ];
         } finally {
-            if (btn) btn.innerHTML = originalText;
+            this._refresh(); // Atualiza a lista dentro do modal já aberto
         }
-        
-        this._el = this._build();
-        document.body.appendChild(this._el);
-        
-        requestAnimationFrame(() => {
-            this._el.style.opacity = '1';
-            const modal = this._el.querySelector('.jukebox-modal');
-            if (modal) {
-                modal.style.transform = 'translateY(0) scale(1)';
-            }
-        });
     }
 
     close() {
@@ -69,7 +73,7 @@ export class JukeboxUI {
             position:fixed; inset:0; background:rgba(10, 15, 28, 0.4);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display:flex; align-items:center; justify-content:center;
-            z-index:10000; opacity:0; transition:all .4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index:20000; opacity:0; transition:all .4s cubic-bezier(0.16, 1, 0.3, 1);
             font-family:'Outfit', sans-serif; pointer-events: auto;
         `;
 
