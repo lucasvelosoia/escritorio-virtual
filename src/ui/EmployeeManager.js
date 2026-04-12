@@ -80,19 +80,35 @@ export class EmployeeManager {
                         </div>
 
                         <!-- Detalhes do Funcionário -->
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
                             <div>
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Nome Completo</label>
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">Nome Completo</label>
                                 <input type="text" id="emp-name" placeholder="Ex: João Silva" style="
                                     width: 100%; background: #1e293b; border: 1px solid #334155; 
-                                    padding: 14px 18px; border-radius: 12px; color: #fff; font-size: 15px; outline: none;
+                                    padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 14px; outline: none;
                                 ">
                             </div>
+                            <div style="display: flex; gap: 12px;">
+                                <div style="flex: 1;">
+                                    <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">E-mail do Funcionário</label>
+                                    <input type="email" id="emp-email" placeholder="E-mail" autocomplete="off" style="
+                                        width: 100%; background: #1e293b; border: 1px solid #334155; 
+                                        padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 14px; outline: none;
+                                    ">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">Senha de Acesso</label>
+                                    <input type="password" id="emp-pass" placeholder="Senha Forte" autocomplete="off" style="
+                                        width: 100%; background: #1e293b; border: 1px solid #334155; 
+                                        padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 14px; outline: none;
+                                    ">
+                                </div>
+                            </div>
                             <div>
-                                <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Setor / Departamento</label>
+                                <label style="color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; display: block;">Setor / Departamento</label>
                                 <select id="emp-sector" style="
                                     width: 100%; background: #1e293b; border: 1px solid #334155; 
-                                    padding: 14px 18px; border-radius: 12px; color: #fff; font-size: 15px; outline: none; appearance: none;
+                                    padding: 12px 16px; border-radius: 12px; color: #fff; font-size: 14px; outline: none; appearance: none;
                                 ">
                                     <option value="marketing">Marketing</option>
                                     <option value="desenvolvimento">Desenvolvimento</option>
@@ -162,18 +178,48 @@ export class EmployeeManager {
 
         saveBtn.onclick = async () => {
             const nameInput = this.el.querySelector('#emp-name');
+            const emailInput = this.el.querySelector('#emp-email');
+            const passInput = this.el.querySelector('#emp-pass');
             const sectorSelect = this.el.querySelector('#emp-sector');
             
-            if (!nameInput.value.trim()) {
-                alert('Por favor, digite o nome do funcionário.');
+            if (!nameInput.value.trim() || !emailInput.value.trim() || !passInput.value.trim()) {
+                alert('Por favor, preencha todos os campos (Nome, E-mail e Senha).');
                 return;
             }
+
+            saveBtn.innerText = 'Processando...';
+            saveBtn.disabled = true;
 
             const numStr = String(this.newEmpAvatar.num).padStart(2, '0');
             const avatarKey = `${this.newEmpAvatar.type}-${numStr}-${this.newEmpAvatar.variant}`;
 
+            let newId = 'emp-' + Math.random().toString(36).substr(2, 9);
+
+            try {
+                if (this.scene.multiplayer && this.scene.multiplayer.active) {
+                    const { data: authData, error: authErr } = await this.scene.multiplayer.supabase.auth.signUp({
+                        email: emailInput.value.trim(),
+                        password: passInput.value
+                    });
+
+                    if (authErr) {
+                        alert('Erro ao criar login no Supabase: ' + authErr.message);
+                        saveBtn.innerText = 'Salvar Colaborador';
+                        saveBtn.disabled = false;
+                        return;
+                    }
+                    
+                    if (authData.user) {
+                        newId = authData.user.id;
+                    }
+                }
+            } catch (err) {
+                console.error('Falha no cadastro Auth:', err);
+                // Continua mesmo se der erro para garantir que o avatar seja adicionado visualmente no painel
+            }
+
             const newEmployee = {
-                id: 'emp-' + Math.random().toString(36).substr(2, 9),
+                id: newId,
                 name: nameInput.value.trim(),
                 sectorId: sectorSelect.value,
                 avatarFullKey: avatarKey
@@ -185,15 +231,18 @@ export class EmployeeManager {
             // Persiste no Supabase se disponível
             if (this.scene.multiplayer && this.scene.multiplayer.active) {
                 saveBtn.innerText = 'Sincronizando...';
-                saveBtn.disabled = true;
                 await this.scene.multiplayer.saveEmployees(EMPLOYEES);
-                saveBtn.innerText = 'Salvar Colaborador';
-                saveBtn.disabled = false;
             } else {
                 localStorage.setItem('escritorio-employees', JSON.stringify(EMPLOYEES));
             }
 
+            saveBtn.innerText = 'Salvar Colaborador';
+            saveBtn.disabled = false;
+
             nameInput.value = '';
+            emailInput.value = '';
+            passInput.value = '';
+            
             this._renderEmployeeList();
             this.scene.events.emit('employees-updated');
         };

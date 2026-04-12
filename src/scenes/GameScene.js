@@ -243,37 +243,7 @@ export class GameScene extends Phaser.Scene {
         this._createHUD();
         
         this.wasdKeys.E.on('down', () => {
-            if (this.taskManager.isOpen()) { this.taskManager.close(); return; }
-            if (this.nearComputer) {
-                const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
-                if (sector && sector.id !== 'reuniao') {
-                    this.workstationMenu.open(
-                        sector,
-                        () => this.browserUI.open(),
-                        () => this.taskManager.open(sector)
-                    );
-                    return;
-                }
-            }
-            if (this.nearJukebox) {
-                this.jukeboxUI.open();
-                return;
-            }
-            if (this.nearWhiteboard) {
-                this.whiteboardUI.open();
-                return;
-            }
-            if (this.activeSector && this.activeSector.id !== 'reuniao') {
-                if (this.activeSector.id === 'whiteboard') {
-                    this.whiteboardUI.open();
-                } else {
-                    this.workstationMenu.open(
-                        this.activeSector,
-                        () => this.browserUI.open(),
-                        () => this.taskManager.open(this.activeSector)
-                    );
-                }
-            }
+            this._handleInteraction();
         });
 
         this._promptText = this.add.text(0, 0, '[ E ] Tasks', {
@@ -369,6 +339,18 @@ export class GameScene extends Phaser.Scene {
         return SECTORS.find(s => cx >= s.pixelX && cx < s.pixelX + s.pixelW && cy >= s.pixelY && cy < s.pixelY + s.pixelH);
     }
 
+    _isAnyMenuOpen() {
+        if (this.taskManager && this.taskManager.isOpen()) return true;
+        if (this.workstationMenu && this.workstationMenu._el !== null) return true;
+        if (this.browserUI && this.browserUI._el !== null) return true;
+        if (this.employeeManager && this.employeeManager.el !== null) return true;
+        if (this.jukeboxUI && this.jukeboxUI.isOpen()) return true;
+        if (this.whiteboardUI && this.whiteboardUI.isOpen) return true;
+        if (this.admin && this.admin.active) return true;
+        if (document.getElementById('avatar-customizer')) return true;
+        return false;
+    }
+
     _makeFurnitureInteractive(sp) {
         const w = sp.width, h = sp.height;
         const ox = sp.originX * w, oy = sp.originY * h;
@@ -376,7 +358,7 @@ export class GameScene extends Phaser.Scene {
         sp.input.cursor = 'pointer';
         sp.on('pointerover', () => { if (!this.admin.active) sp.setTint(0xc4b5fd); });
         sp.on('pointerout',  () => { sp.clearTint(); });
-        sp.on('pointerdown', () => { if (!this.admin.active && !this.taskManager.isOpen()) this._handleFurnitureClick(sp); });
+        sp.on('pointerdown', () => { if (!this._isAnyMenuOpen()) this._handleFurnitureClick(sp); });
     }
 
     _handleFurnitureClick(sp) {
@@ -484,7 +466,7 @@ export class GameScene extends Phaser.Scene {
             const zone = this.add.rectangle(s.pixelX, s.pixelY, s.pixelW, s.pixelH, hex, 0.03).setOrigin(0, 0).setDepth(2).setStrokeStyle(1, hex, 0.15);
             zone.setInteractive({ useHandCursor: true });
             zone.on('pointerdown', () => { 
-                if (!this.admin.active && !this.taskManager.isOpen() && s.id !== 'reuniao') {
+                if (!this._isAnyMenuOpen() && s.id !== 'reuniao') {
                     if (s.id === 'whiteboard') {
                         this.whiteboardUI.open();
                     } else {
@@ -722,7 +704,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     _handleInteraction() {
-        if (this.taskManager && this.taskManager.isOpen()) { this.taskManager.close(); return; }
+        if (this._isAnyMenuOpen()) return;
+
         if (this.nearComputer) {
             const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
             if (sector && sector.id !== 'reuniao') {
