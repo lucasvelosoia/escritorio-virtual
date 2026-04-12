@@ -17,14 +17,22 @@ function createWindow() {
     // Ou você pode carregar o http://localhost:5173 se estiver rodando local
     win.loadURL('https://escritorio-virtual-pi.vercel.app/');
 
-    // --- O PULO DO GATO ---
-    // Removemos os cabeçalhos de segurança que impedem os sites de abrirem
+    // --- O PULO DO GATO (Nível Master) ---
+    // Removemos TODOS os bloqueios de segurança que impedem sites (como Google/YouTube) de abrirem
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+        const headers = details.responseHeaders;
+        
+        // Remove cabeçalhos restritivos
+        delete headers['x-frame-options'];
+        delete headers['X-Frame-Options'];
+        delete headers['content-security-policy'];
+        delete headers['Content-Security-Policy'];
+
         callback({
             responseHeaders: {
-                ...details.responseHeaders,
-                'Content-Security-Policy': [''],
-                'X-Frame-Options': ['ALLOWALL']
+                ...headers,
+                'Access-Control-Allow-Origin': ['*'],
+                'Access-Control-Allow-Methods': ['*']
             }
         });
     });
