@@ -6,6 +6,7 @@ import { AvatarCustomizer } from '../ui/AvatarCustomizer.js';
 import { MultiplayerService } from '../utils/MultiplayerService.js';
 import { JukeboxUI } from '../ui/JukeboxUI.js';
 import { BrowserUI } from '../ui/BrowserUI.js';
+import { WorkstationMenu } from '../ui/WorkstationMenu.js';
 
 const T = 32;
 
@@ -48,6 +49,7 @@ export class GameScene extends Phaser.Scene {
         });
         this.jukeboxUI = new JukeboxUI(this);
         this.browserUI = new BrowserUI(this);
+        this.workstationMenu = new WorkstationMenu(this);
         this._promptText = null;
         this._lastUpdate = 0;
     }
@@ -196,15 +198,25 @@ export class GameScene extends Phaser.Scene {
         this.wasdKeys.E.on('down', () => {
             if (this.taskManager.isOpen()) { this.taskManager.close(); return; }
             if (this.nearComputer) {
-                // Ao apertar E perto de um computador, abrimos o navegador
-                this.browserUI.open();
+                const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
+                this.workstationMenu.open(
+                    sector,
+                    () => this.browserUI.open(),
+                    () => sector ? this.taskManager.open(sector) : null
+                );
                 return;
             }
             if (this.nearJukebox) {
                 this.jukeboxUI.open();
                 return;
             }
-            if (this.activeSector) this.taskManager.open(this.activeSector);
+            if (this.activeSector) {
+                this.workstationMenu.open(
+                    this.activeSector,
+                    () => this.browserUI.open(),
+                    () => this.taskManager.open(this.activeSector)
+                );
+            }
         });
 
         this._promptText = this.add.text(0, 0, '[ E ] Tasks', {
@@ -297,19 +309,27 @@ export class GameScene extends Phaser.Scene {
             this.jukeboxUI.open();
             return;
         }
-        if (sp.texture.key.includes('laptop') || sp.texture.key.includes('screen')) {
-            this.browserUI.open();
-            return;
-        }
+        
         const item = this.admin.items.find(i => i.sprite === sp);
         let sectorId = item?.sectorId;
         if (!sectorId) {
             const sector = this._getSectorAt(sp.x, sp.y, sp.displayWidth, sp.displayHeight, sp.originX, sp.originY);
             sectorId = sector?.id;
         }
-        if (sectorId) {
-            const sector = SECTORS.find(s => s.id === sectorId);
-            if (sector) this.taskManager.open(sector);
+
+        const sector = sectorId ? SECTORS.find(s => s.id === sectorId) : null;
+        
+        if (sp.texture.key.includes('laptop') || sp.texture.key.includes('screen') || sp.texture.key.includes('table')) {
+            this.workstationMenu.open(
+                sector,
+                () => this.browserUI.open(),
+                () => sector ? this.taskManager.open(sector) : null
+            );
+            return;
+        }
+
+        if (sector) {
+            this.taskManager.open(sector);
         }
     }
 
