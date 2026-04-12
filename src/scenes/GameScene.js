@@ -285,6 +285,12 @@ export class GameScene extends Phaser.Scene {
         const sector = this._getSectorAt(x, y, sp.displayWidth, sp.displayHeight, originX, originY);
         if (sector) item.sectorId = sector.id;
         this._makeFurnitureInteractive(sp);
+        
+        // Se for uma mesa ou algo de trabalho, registramos para proximidade
+        const isWork = key.includes('laptop') || key.includes('screen') || key.includes('table') || key.includes('desk') || key.includes('computer') || key.includes('office') || key.includes('monitor');
+        if (isWork && item.sectorId) {
+            this.computers.push({ sprite: sp, sectorId: item.sectorId });
+        }
         return sp;
     }
 
@@ -305,6 +311,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     _handleFurnitureClick(sp) {
+        console.log('Objeto clicado:', sp.texture.key);
         if (sp.texture.key === 'jukebox') {
             this.jukeboxUI.open();
             return;
@@ -319,7 +326,17 @@ export class GameScene extends Phaser.Scene {
 
         const sector = sectorId ? SECTORS.find(s => s.id === sectorId) : null;
         
-        if (sp.texture.key.includes('laptop') || sp.texture.key.includes('screen') || sp.texture.key.includes('table')) {
+        // Verificação ampliada para notebooks, telas e QUALQUER tipo de mesa (table, desk, office, monitor)
+        const isWorkstation = 
+            sp.texture.key.includes('laptop') || 
+            sp.texture.key.includes('screen') || 
+            sp.texture.key.includes('table') || 
+            sp.texture.key.includes('desk') ||
+            sp.texture.key.includes('computer') ||
+            sp.texture.key.includes('office') ||
+            sp.texture.key.includes('monitor');
+
+        if (isWorkstation) {
             this.workstationMenu.open(
                 sector,
                 () => this.browserUI.open(),
@@ -344,7 +361,8 @@ export class GameScene extends Phaser.Scene {
                 if (sector) item.sectorId = sector.id;
             }
             this._makeFurnitureInteractive(sp);
-            if (item.sectorId && (key.includes('laptop') || key.includes('screen'))) {
+            const isComp = key.includes('laptop') || key.includes('screen') || key.includes('table') || key.includes('desk') || key.includes('computer');
+            if (item.sectorId && isComp) {
                 this.computers.push({ sprite: sp, sectorId: item.sectorId });
             }
             if (key === 'jukebox') {
