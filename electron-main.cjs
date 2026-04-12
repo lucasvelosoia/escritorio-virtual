@@ -11,6 +11,7 @@ function createWindow() {
             contextIsolation: true,
             webviewTag: true, // Habilita a tag especial que pula bloqueios de site
             webSecurity: false, // DESATIVA TRAVA DE SEGURANÇA PARA FETCH LOCAL
+            preload: path.join(__dirname, 'electron-preload.cjs')
         }
     });
 

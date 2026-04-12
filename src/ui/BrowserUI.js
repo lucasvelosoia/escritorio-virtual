@@ -111,9 +111,8 @@ export class BrowserUI {
         `;
         content.appendChild(bgMsg);
         
-        // Verificação Robusta de Electron (Não depende apenas do UserAgent)
-        const isElectron = !!(window && window.process && window.process.type === 'renderer') || 
-                          navigator.userAgent.toLowerCase().includes(' electron');
+        // Verificação 100% Robusta via Preload Bridge
+        const isElectron = !!(window.electronAPI && window.electronAPI.isElectron);
         const browserTag = isElectron ? 'webview' : 'iframe';
         
         const webElement = document.createElement(browserTag);
