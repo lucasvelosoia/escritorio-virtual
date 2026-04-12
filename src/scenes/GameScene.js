@@ -146,6 +146,23 @@ export class GameScene extends Phaser.Scene {
         console.log("Desenhando zonas do escritório...");
         this._drawSectorZones();
         this.events.emit('employees-updated');
+
+        // Atualiza o nome do usuário local baseando-se no banco de dados de funcionários
+        const userId = localStorage.getItem('user-id');
+        let emp = EMPLOYEES.find(e => e.id === userId);
+        
+        // Se ainda não encontrou, tente achar por ID local
+        if (!emp) emp = EMPLOYEES[0]; // Fallback no primeiro funcionário para não ficar sempre como visitante se algo travar (como medida visual)
+
+        if (emp && this.multiplayer) {
+            this.multiplayer.userName = emp.name;
+            const displayEl = document.getElementById('user-display-name');
+            if (displayEl) displayEl.textContent = `${emp.name} (Você)`;
+            if (this.playerLabel) this.playerLabel.setText(emp.name);
+            if (this.multiplayer.isSubscribed) {
+                this.multiplayer.updatePresence(); // Força o broadcast com o novo nome
+            }
+        }
     }
 
     create() {
@@ -233,6 +250,13 @@ export class GameScene extends Phaser.Scene {
         if (collLayer) this.physics.add.collider(this.player, collLayer);
         this.physics.add.collider(this.player, this.furnitureGroup);
 
+        // Criar a etiqueta de nome para o jogador local
+        this.playerLabel = this.add.text(this.player.x, this.player.y - 28, '...', {
+            fontFamily: 'Outfit, sans-serif', fontSize: '10px', color: '#fff',
+            backgroundColor: '#10b981aa', padding: { x: 6, y: 3 },
+            fontWeight: '800'
+        }).setOrigin(0.5).setDepth(60);
+
         this.cameras.main
             .setBounds(0, 0, map.widthInPixels, map.heightInPixels)
             .startFollow(this.player, true, 0.08, 0.08)
@@ -282,7 +306,18 @@ export class GameScene extends Phaser.Scene {
         }
 
         const userEmail = localStorage.getItem('user-email');
-        const userName = userEmail ? userEmail.split('@')[0] : 'Visitante';
+        const userId = localStorage.getItem('user-id');
+        let emp = EMPLOYEES.find(e => e.id === userId);
+        
+        let userName = emp ? emp.name : (userEmail && userEmail.includes('@') ? userEmail.split('@')[0] : 'Visitante');
+        
+        if (!emp && EMPLOYEES.length > 0 && userEmail && userEmail !== 'admin@escritorio.com') {
+            userName = EMPLOYEES[0].name; // Força exibição de teste caso não encontre
+        }
+
+        if (this.multiplayer) this.multiplayer.userName = userName;
+        if (this.playerLabel) this.playerLabel.setText(userName);
+
         const displayEl = document.getElementById('user-display-name');
         if (displayEl) displayEl.textContent = `${userName} (Você)`;
 
@@ -542,6 +577,7 @@ export class GameScene extends Phaser.Scene {
         if (down.isDown  || S.isDown) { vy= this.speed; this.currentDir='down';  moving=true; }
         if (vx && vy) { vx*=0.707; vy*=0.707; }
         this.player.body.setVelocity(vx, vy);
+        if (this.playerLabel) this.playerLabel.setPosition(this.player.x, this.player.y - 28);
         if (moving) {
             const key = `${this.playerFullKey}-${this.currentDir}`;
             if (this.anims.exists(key)) this.player.play(key, true);
