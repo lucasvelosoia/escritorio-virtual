@@ -4,9 +4,9 @@ import { AdminEditMode } from '../utils/AdminEditMode.js';
 import { TaskManager } from '../ui/TaskManager.js';
 import { AvatarCustomizer } from '../ui/AvatarCustomizer.js';
 import { MultiplayerService } from '../utils/MultiplayerService.js';
-import { JukeboxUI } from '../ui/JukeboxUI.js';
 import { BrowserUI } from '../ui/BrowserUI.js';
 import { WorkstationMenu } from '../ui/WorkstationMenu.js';
+import { WhiteboardUI } from '../ui/WhiteboardUI.js';
 
 const T = 32;
 
@@ -50,6 +50,7 @@ export class GameScene extends Phaser.Scene {
         this.jukeboxUI = new JukeboxUI(this);
         this.browserUI = new BrowserUI(this);
         this.workstationMenu = new WorkstationMenu(this);
+        this.whiteboardUI = new WhiteboardUI(this);
         this._promptText = null;
         this._lastUpdate = 0;
     }
@@ -76,6 +77,7 @@ export class GameScene extends Phaser.Scene {
             this._decorateDesenvolvimento();
             this._decorateRH(); 
             this._decorateReuniao();
+            this._createWhiteboard();
         }
 
         if (employees && employees.length > 0) {
@@ -210,6 +212,10 @@ export class GameScene extends Phaser.Scene {
             }
             if (this.nearJukebox) {
                 this.jukeboxUI.open();
+                return;
+            }
+            if (this.nearWhiteboard) {
+                this.whiteboardUI.open();
                 return;
             }
             if (this.activeSector && this.activeSector.id !== 'reuniao') {
@@ -519,6 +525,14 @@ export class GameScene extends Phaser.Scene {
             this._promptText.setPosition(nearest.sprite.x + 16, nearest.sprite.y - 6).setVisible(true);
         } else this._promptText.setVisible(false);
 
+        // Proximidade Whiteboard
+        const distWB = this.whiteboardArea ? Phaser.Math.Distance.Between(px, py, this.whiteboardArea.x, this.whiteboardArea.y + 16) : Infinity;
+        this.nearWhiteboard = distWB < RANGE;
+        if (this.nearWhiteboard && !this.admin.active) {
+            this._promptText.setText('[ E ] Abrir Lousa');
+            this._promptText.setPosition(this.whiteboardArea.x, this.whiteboardArea.y - 12).setVisible(true);
+        }
+
         // Verificação de proximidade Jukebox
         const distJukebox = this.jukeboxSprite ? Phaser.Math.Distance.Between(px, py, this.jukeboxSprite.x + 16, this.jukeboxSprite.y + 16) : Infinity;
         this.nearJukebox = distJukebox < RANGE;
@@ -615,6 +629,22 @@ export class GameScene extends Phaser.Scene {
 
         const leaveBtn = document.getElementById('btn-leave-meeting');
         if (leaveBtn) leaveBtn.onclick = () => { this.player.setPosition(22 * 32, 7 * 32); this._closeMeeting(); };
+    }
+
+    _createWhiteboard() {
+        // Criamos uma lousa visual na parede da sala de reunião (Setor Reunião)
+        // Posição: Parede Norte da sala de reunião (aproximadamente x=25T, y=4T)
+        this.whiteboardArea = this.add.rectangle(25 * 32, 4.2 * 32, 120, 40, 0xffffff)
+            .setOrigin(0.5, 0.5)
+            .setDepth(5)
+            .setStrokeStyle(3, 0x1e293b);
+        
+        this.add.text(25 * 32, 4.2 * 32, 'WHITEBOARD', {
+            fontSize: '10px', color: '#1e293b', fontWeight: '800'
+        }).setOrigin(0.5, 0.5).setDepth(6);
+
+        this.whiteboardArea.setInteractive({ useHandCursor: true });
+        this.whiteboardArea.on('pointerdown', () => this.whiteboardUI.open());
     }
 
     _closeMeeting() {

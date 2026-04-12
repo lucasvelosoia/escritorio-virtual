@@ -49,6 +49,9 @@ export class MultiplayerService {
                 console.log('Player left:', key);
                 this._removePlayer(key);
             })
+            .on('broadcast', { event: 'whiteboard-draw' }, ({ payload }) => {
+                if (this.scene.whiteboardUI) this.scene.whiteboardUI.externalDraw(payload);
+            })
             .on('broadcast', { event: 'chat' }, ({ payload }) => {
                 this._handleChatMessage(payload);
             })
@@ -108,6 +111,15 @@ export class MultiplayerService {
                 dir: this.scene.currentDir,
                 anim: player.anims.currentAnim?.key || null
             }
+        });
+    }
+
+    async sendWhiteboardDraw(data) {
+        if (!this.channel) return;
+        this.channel.send({
+            type: 'broadcast',
+            event: 'whiteboard-draw',
+            payload: data
         });
     }
 
