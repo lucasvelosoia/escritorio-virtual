@@ -1,7 +1,45 @@
 const STORAGE_KEY = 'escritorio-furniture-layout';
 const SNAP        = 32;
 
-import { SECTORS } from '../data/sectors.js';
+// CACHE-BUSTER: Lista de Setores Hardcoded para garantir atualização
+const SECTORS = [
+    {
+        id: 'whiteboard', label: '◈ LOUSA COOPERATIVA ◈', color: 0xfacc15,
+        tileX: 14, tileY: 1, tileW: 4, tileH: 2,
+        tasks: [], files: [], projects: []
+    },
+    {
+        id: 'marketing', label: 'MARKETING', color: 0xec4899,
+        tileX: 1, tileY: 3, tileW: 6, tileH: 10,
+        tasks: [], files: [], projects: []
+    },
+    {
+        id: 'desenvolvimento', label: 'DESENVOLVIMENTO', color: 0x6366f1,
+        tileX: 8, tileY: 3, tileW: 8, tileH: 10,
+        tasks: [], files: [], projects: []
+    },
+    {
+        id: 'reuniao', label: 'SALA DE REUNIÃO', color: 0x10b981,
+        tileX: 23, tileY: 3, tileW: 7, tileH: 10,
+        tasks: [], files: [], projects: []
+    },
+    {
+        id: 'comercial', label: 'COMERCIAL', color: 0xf59e0b,
+        tileX: 16, tileY: 3, tileW: 6, tileH: 10,
+        tasks: [], files: [], projects: []
+    }
+];
+
+// Helper para calcular pixels (Injectado)
+SECTORS.forEach(s => {
+    Object.defineProperties(s, {
+        pixelX: { get() { return this.tileX * 32; } },
+        pixelY: { get() { return this.tileY * 32; } },
+        pixelW: { get() { return this.tileW * 32; } },
+        pixelH: { get() { return this.tileH * 32; } },
+    });
+});
+
 import { EMPLOYEES, saveEmployees } from '../data/employees.js';
 
 // Catálogo de assets disponíveis para adicionar
