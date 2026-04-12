@@ -111,8 +111,9 @@ export class BrowserUI {
         `;
         content.appendChild(bgMsg);
         
-        // Verificamos se estamos no Electron
-        const isElectron = navigator.userAgent.toLowerCase().includes(' electron');
+        // Verificação Robusta de Electron (Não depende apenas do UserAgent)
+        const isElectron = !!(window && window.process && window.process.type === 'renderer') || 
+                          navigator.userAgent.toLowerCase().includes(' electron');
         const browserTag = isElectron ? 'webview' : 'iframe';
         
         const webElement = document.createElement(browserTag);
@@ -127,7 +128,8 @@ export class BrowserUI {
             webElement.setAttribute('allowpopups', '');
             webElement.setAttribute('useragent', chromeUserAgent);
             webElement.setAttribute('nodeintegration', 'no');
-            webElement.setAttribute('webpreferences', 'autoplayPolicy=no-user-gesture-required, nativeWindowOpen=yes');
+            // Permissões extras para garantir carregamento de scripts e CSS de terceiros
+            webElement.setAttribute('webpreferences', 'autoplayPolicy=no-user-gesture-required, nativeWindowOpen=yes, allowRunningInsecureContent=yes, javascript=yes');
             webElement.style.cssText = `width:100%; height:100%; background:#fff; position:relative; z-index:1;`;
         } else {
             webElement.setAttribute('allow', 'autoplay; microphone; camera; display-capture; fullscreen');
