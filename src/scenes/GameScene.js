@@ -4,6 +4,7 @@ import { AdminEditMode } from '../utils/AdminEditMode.js';
 import { TaskManager } from '../ui/TaskManager.js';
 import { AvatarCustomizer } from '../ui/AvatarCustomizer.js';
 import { MultiplayerService } from '../utils/MultiplayerService.js';
+import { JukeboxUI } from '../ui/JukeboxUI.js';
 import { BrowserUI } from '../ui/BrowserUI.js';
 import { WorkstationMenu } from '../ui/WorkstationMenu.js';
 import { WhiteboardUI } from '../ui/WhiteboardUI.js';
