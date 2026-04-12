@@ -4,6 +4,7 @@ import { AdminEditMode } from '../utils/AdminEditMode.js';
 import { TaskManager } from '../ui/TaskManager.js';
 import { AvatarCustomizer } from '../ui/AvatarCustomizer.js';
 import { MultiplayerService } from '../utils/MultiplayerService.js';
+import { JukeboxUI } from '../ui/JukeboxUI.js';
 
 const T = 32;
 
@@ -44,6 +45,7 @@ export class GameScene extends Phaser.Scene {
         this.avatarCustomizer = new AvatarCustomizer({
             onSave: (base) => this._updatePlayerStyle(base)
         });
+        this.jukeboxUI = new JukeboxUI(this);
         this._promptText = null;
         this._lastUpdate = 0;
     }
@@ -150,6 +152,10 @@ export class GameScene extends Phaser.Scene {
                 const sector = SECTORS.find(s => s.id === this.nearComputer.sectorId);
                 if (sector) { this.taskManager.open(sector); return; }
             }
+            if (this.nearJukebox) {
+                this.jukeboxUI.open();
+                return;
+            }
             if (this.activeSector) this.taskManager.open(this.activeSector);
         });
 
@@ -206,6 +212,11 @@ export class GameScene extends Phaser.Scene {
         const customizeBtn = document.getElementById('btn-customize');
         if (customizeBtn) {
             customizeBtn.onclick = () => this.avatarCustomizer.open();
+        }
+
+        const jukeboxBtn = document.getElementById('btn-jukebox');
+        if (jukeboxBtn) {
+            jukeboxBtn.onclick = () => this.jukeboxUI.open();
         }
 
         if (chatInput) {
@@ -280,6 +291,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     _handleFurnitureClick(sp) {
+        if (sp.texture.key === 'jukebox') {
+            this.jukeboxUI.open();
+            return;
+        }
         const item = this.admin.items.find(i => i.sprite === sp);
         let sectorId = item?.sectorId;
         if (!sectorId) {
@@ -305,6 +320,9 @@ export class GameScene extends Phaser.Scene {
             this._makeFurnitureInteractive(sp);
             if (item.sectorId && (key.includes('laptop') || key.includes('screen'))) {
                 this.computers.push({ sprite: sp, sectorId: item.sectorId });
+            }
+            if (key === 'jukebox') {
+                this.jukeboxSprite = sp;
             }
         });
         this.furnitureGroup.refresh();
@@ -335,6 +353,10 @@ export class GameScene extends Phaser.Scene {
         [[24,4,'up'],[26,4,'up'],[24,8,'down'],[26,8,'down']].forEach(([dx,dy,dir]) => {
             this._furniture(dx*T, dy*T, `chair-green-${dir}`, 7);
         });
+        
+        // Colocando a Jukebox
+        this.jukeboxSprite = this._furniture(21*T, 5*T, 'jukebox', 7);
+        this.jukeboxSprite.setScale(0.5); // Ajuste de escala para o pixel art premium
     }
 
     _drawSectorZones() {
@@ -437,6 +459,14 @@ export class GameScene extends Phaser.Scene {
         if (nearest && !this.taskManager.isOpen() && !this.admin.active) {
             this._promptText.setPosition(nearest.sprite.x + 16, nearest.sprite.y - 6).setVisible(true);
         } else this._promptText.setVisible(false);
+
+        // Verificação de proximidade Jukebox
+        const distJukebox = this.jukeboxSprite ? Phaser.Math.Distance.Between(px, py, this.jukeboxSprite.x + 16, this.jukeboxSprite.y + 16) : Infinity;
+        this.nearJukebox = distJukebox < RANGE;
+        if (this.nearJukebox && !this.jukeboxUI.isOpen() && !this.admin.active) {
+            this._promptText.setText('[ E ] Jukebox');
+            this._promptText.setPosition(this.jukeboxSprite.x + 16, this.jukeboxSprite.y - 6).setVisible(true);
+        }
     }
 
     _openMeeting() {

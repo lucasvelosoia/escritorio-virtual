@@ -107,6 +107,9 @@ export class BootScene extends Phaser.Scene {
         this.load.image('clock',            `${col}/Office/Props/Clock.png`);
         this.load.image('folders',          `${col}/Office/Props/Folders.png`);
         this.load.image('bin',              `${col}/Office/Props/Bin.png`);
+
+        // ── Custom Asset ──────────────────────────────────────────────
+        this.load.image('jukebox', '/assets/office/jukebox.png');
     }
 
     create() {
