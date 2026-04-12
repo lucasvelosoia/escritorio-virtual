@@ -346,7 +346,11 @@ export class GameScene extends Phaser.Scene {
         }
 
         if (sector) {
-            this.taskManager.open(sector);
+            this.workstationMenu.open(
+                sector,
+                () => this.browserUI.open(),
+                () => this.taskManager.open(sector)
+            );
         }
     }
 
@@ -410,7 +414,15 @@ export class GameScene extends Phaser.Scene {
             const hex = s.color;
             const zone = this.add.rectangle(s.pixelX, s.pixelY, s.pixelW, s.pixelH, hex, 0.03).setOrigin(0, 0).setDepth(2).setStrokeStyle(1, hex, 0.15);
             zone.setInteractive({ useHandCursor: true });
-            zone.on('pointerdown', () => { if (!this.admin.active && !this.taskManager.isOpen()) this.taskManager.open(s); });
+            zone.on('pointerdown', () => { 
+                if (!this.admin.active && !this.taskManager.isOpen()) {
+                    this.workstationMenu.open(
+                        s,
+                        () => this.browserUI.open(),
+                        () => this.taskManager.open(s)
+                    );
+                }
+            });
             const labelStr = '#' + (hex !== undefined ? hex.toString(16).padStart(6,'0') : 'ffffff');
             const label = this.add.text(s.pixelX + s.pixelW / 2, s.pixelY + 4, `◈ ${s.label} ◈`, { 
                 fontFamily: 'Outfit, monospace', fontSize: '7px', color: labelStr, fontWeight: '800', 
