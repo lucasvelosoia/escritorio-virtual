@@ -48,6 +48,7 @@ import { JukeboxUI } from '../ui/JukeboxUI.js';
 import { BrowserUI } from '../ui/BrowserUI.js';
 import { WorkstationMenu } from '../ui/WorkstationMenu.js';
 import { WhiteboardUI } from '../ui/WhiteboardUI.js';
+import { EmployeeManager } from '../ui/EmployeeManager.js';
 
 
 // Itens que NÃO bloqueiam passagem (decorativos finos)
@@ -91,6 +92,7 @@ export class GameScene extends Phaser.Scene {
         this.browserUI = new BrowserUI(this);
         this.workstationMenu = new WorkstationMenu(this);
         this.whiteboardUI = new WhiteboardUI(this);
+        this.employeeManager = new EmployeeManager(this);
         this._promptText = null;
         this._lastUpdate = 0;
     }
@@ -315,12 +317,24 @@ export class GameScene extends Phaser.Scene {
         if (displayEl) displayEl.textContent = `${userName} (Você)`;
 
         const lBtn = document.getElementById('btn-layout');
+        const eBtn = document.getElementById('btn-employees');
+        const isAdmin = userEmail === 'admin@escritorio.com';
+
         if (lBtn) {
-            if (userEmail === 'admin@escritorio.com') {
+            if (isAdmin) {
                 lBtn.style.display = 'flex';
                 lBtn.onclick = () => this.admin.toggle();
             } else {
                 lBtn.style.display = 'none';
+            }
+        }
+
+        if (eBtn) {
+            if (isAdmin) {
+                eBtn.style.display = 'flex';
+                eBtn.onclick = () => this.employeeManager.open();
+            } else {
+                eBtn.style.display = 'none';
             }
         }
     }
