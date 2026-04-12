@@ -14,11 +14,16 @@ const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // 3. Legacy Key (backup)
 
 const url = (envUrl && !envUrl.includes('SUA_URL')) ? envUrl : supabaseUrl;
-let key = (envKey && envKey.length > 50) ? envKey : publishableKey;
 
-// Se a chave do ENV for a mesma que estava dando erro, forçamos a Publishable
-if (key === legacyKey) {
-    key = publishableKey;
+// Forçamos a Publishable Key se detectarmos que a chave do ENV é o formato legado (JWT) que está falhando
+const cleanEnvKey = (envKey || "").replace(/["']/g, "").trim();
+let key = publishableKey; // Default para a nova chave que funciona
+
+if (cleanEnvKey.startsWith('sb_publishable_')) {
+    key = cleanEnvKey;
+} else if (cleanEnvKey.length > 50 && cleanEnvKey !== legacyKey) {
+    // Se for uma chave customizada válida e diferente da legada que sabemos que falha
+    key = cleanEnvKey;
 }
 
 const cleanUrl = url.replace(/["']/g, "").trim();
