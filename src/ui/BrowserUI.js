@@ -119,12 +119,18 @@ export class BrowserUI {
         webElement.id = 'br-iframe';
         webElement.src = this.currentUrl;
         
+        // DISFARCE DE CHROME (User Agent) - Resolve Facebook torto e vÍdeos travados
+        const chromeUserAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+        
         // Atributos específicos do Electron para pular bloqueios
         if (isElectron) {
             webElement.setAttribute('allowpopups', '');
+            webElement.setAttribute('useragent', chromeUserAgent);
             webElement.setAttribute('nodeintegration', 'no');
+            webElement.setAttribute('webpreferences', 'autoplayPolicy=no-user-gesture-required, nativeWindowOpen=yes');
             webElement.style.cssText = `width:100%; height:100%; background:#fff; position:relative; z-index:1;`;
         } else {
+            webElement.setAttribute('allow', 'autoplay; microphone; camera; display-capture; fullscreen');
             webElement.style.cssText = `width:100%; height:100%; border:none; background:#fff; position:relative; z-index:1;`;
         }
         
